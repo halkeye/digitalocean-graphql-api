@@ -1,28 +1,177 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+"""
+All the queries
+"""
+type Query {
+  "Get your account"
+  account: Account
+  """All chat rooms"""
+  allChatRooms: [ChatRoom!]!
+  """Get all the todos"""
+  allTodos: [Todo!]!
+  """Get a specific chatroom"""
+  chatRoom(
+    """The ID of an object"""
+    id: ID!
+  ): ChatRoom!
+}
 
+"""
+All mutations
+"""
+type Mutation {
+  """Create a todo"""
+  createTodo(
+    """New Todo Information"""
+    input: NewTodo!
+  ): Todo!
+}
+
+## Tutorial #1
+
+"""
+Todo
+"""
 type Todo {
-  id: ID!
-  text: String!
+  """Is it done"""
   done: Boolean!
+  """The id of the object."""
+  id: ID!
+  """Text of the todo item"""
+  text: String!
+  """Who todo is it"""
   user: User!
 }
 
+"""
+Who did it
+"""
 type User {
+  """The id of the user"""
   id: ID!
+  "Username"
   name: String!
 }
 
-type Query {
-  todos: [Todo!]!
-}
-
+"""
+Create a new Todo entry
+"""
 input NewTodo {
+  "text todo"
   text: String!
+  "Who created it"
   userId: String!
 }
 
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+## Tutorial #2
+
+"""
+An object with an ID
+"""
+interface Node {
+  """The id of the object."""
+  id: ID!
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+}
+
+"""
+Chat Room
+"""
+type ChatRoom implements Node {
+  """Messages in room"""
+  chatRoomMessages(
+    """Skip"""
+    first: Int = 20,
+    """Cursor ID"""
+    after: ID
+  ): ChatRoomMessagesConnection
+  """The ID of an object"""
+  id: ID!
+  """Chat room name"""
+  name: String
+}
+
+"""Chat Room Message"""
+type ChatRoomMessage implements Node {
+  """The ID of an object"""
+  id: ID!
+  """Message body"""
+  text: String
+}
+
+"Message Connections"
+type ChatRoomMessagesConnection {
+  """Edges"""
+  edges: [ChatRoomMessagesEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""Message Edge"""
+type ChatRoomMessagesEdge {
+  """Cursor"""
+  cursor: ID!
+  """Message Node"""
+  node: ChatRoomMessage
+}
+
+## Digital ocean stuff
+
+"""
+Account Limits
+"""
+type AccountLimits {
+  """
+  How many droplets can you have at once
+  """
+  dropletLimit: Int!
+  """
+  How many volumes can you have at once
+  """
+  volumeLimit: Int!
+}
+
+"""
+Team information
+"""
+type Team implements Node {
+  """The id of the team"""
+  id: ID!
+  """What is the teams limits"""
+  limits: AccountLimits
+  """
+  Team UUID
+  """
+  uuid: String!
+}
+
+"""
+Account Information
+"""
+type Account implements Node {
+  """Email address"""
+  email: String!
+  """Has email been verified"""
+  emailVerified: Boolean!
+  """The id of the account"""
+  id: ID!
+  """Account Status"""
+  status: String!
+  """Account UUID"""
+  uuid: String!
 }

@@ -2,18 +2,131 @@
 
 package model
 
+// An object with an ID
+type Node interface {
+	IsNode()
+	// The id of the object.
+	GetID() string
+}
+
+// Account Information
+type Account struct {
+	// Email address
+	Email string `json:"email"`
+	// Has email been verified
+	EmailVerified bool `json:"emailVerified"`
+	// The id of the account
+	ID string `json:"id"`
+	// Account Status
+	Status string `json:"status"`
+	// Account UUID
+	UUID string `json:"uuid"`
+}
+
+func (Account) IsNode() {}
+
+// The id of the object.
+func (this Account) GetID() string { return this.ID }
+
+// Account Limits
+type AccountLimits struct {
+	// How many droplets can you have at once
+	DropletLimit int `json:"dropletLimit"`
+	// How many volumes can you have at once
+	VolumeLimit int `json:"volumeLimit"`
+}
+
+// Chat Room
+type ChatRoom struct {
+	// Messages in room
+	ChatRoomMessages *ChatRoomMessagesConnection `json:"chatRoomMessages,omitempty"`
+	// The ID of an object
+	ID string `json:"id"`
+	// Chat room name
+	Name *string `json:"name,omitempty"`
+}
+
+func (ChatRoom) IsNode() {}
+
+// The id of the object.
+func (this ChatRoom) GetID() string { return this.ID }
+
+// Chat Room Message
+type ChatRoomMessage struct {
+	// The ID of an object
+	ID string `json:"id"`
+	// Message body
+	Text *string `json:"text,omitempty"`
+}
+
+func (ChatRoomMessage) IsNode() {}
+
+// The id of the object.
+func (this ChatRoomMessage) GetID() string { return this.ID }
+
+// Message Connections
+type ChatRoomMessagesConnection struct {
+	// Edges
+	Edges []*ChatRoomMessagesEdge `json:"edges"`
+	// Pagination info
+	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+// Message Edge
+type ChatRoomMessagesEdge struct {
+	// Cursor
+	Cursor string `json:"cursor"`
+	// Message Node
+	Node *ChatRoomMessage `json:"node,omitempty"`
+}
+
+// All mutations
 type Mutation struct {
 }
 
+// Create a new Todo entry
 type NewTodo struct {
-	Text   string `json:"text"`
+	// text todo
+	Text string `json:"text"`
+	// Who created it
 	UserID string `json:"userId"`
 }
 
+// Information about pagination in a connection.
+type PageInfo struct {
+	// When paginating forwards, the cursor to continue.
+	EndCursor *string `json:"endCursor,omitempty"`
+	// When paginating forwards, are there more items?
+	HasNextPage bool `json:"hasNextPage"`
+	// When paginating backwards, are there more items?
+	HasPreviousPage bool `json:"hasPreviousPage"`
+	// When paginating backwards, the cursor to continue.
+	StartCursor *string `json:"startCursor,omitempty"`
+}
+
+// All the queries
 type Query struct {
 }
 
+// Team information
+type Team struct {
+	// The id of the team
+	ID string `json:"id"`
+	// What is the teams limits
+	Limits *AccountLimits `json:"limits,omitempty"`
+	// Team UUID
+	UUID string `json:"uuid"`
+}
+
+func (Team) IsNode() {}
+
+// The id of the object.
+func (this Team) GetID() string { return this.ID }
+
+// Who did it
 type User struct {
-	ID   string `json:"id"`
+	// The id of the user
+	ID string `json:"id"`
+	// Username
 	Name string `json:"name"`
 }

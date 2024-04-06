@@ -1,8 +1,6 @@
 package graph
 
 import (
-	"context"
-
 	"github.com/digitalocean/graphql-api/graph/model"
 )
 
@@ -14,9 +12,4 @@ import (
 
 type Resolver struct {
 	todos []*model.Todo
-}
-
-// User is the resolver for the user field.
-func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
-	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID}, nil
 }

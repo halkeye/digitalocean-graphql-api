@@ -25,9 +25,29 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 	return todo, nil
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.todos, nil
+// Account is the resolver for the account field.
+func (r *queryResolver) Account(ctx context.Context) (*model.Account, error) {
+	panic(fmt.Errorf("not implemented: Account - account"))
+}
+
+// AllChatRooms is the resolver for the allChatRooms field.
+func (r *queryResolver) AllChatRooms(ctx context.Context) ([]*model.ChatRoom, error) {
+	panic(fmt.Errorf("not implemented: AllChatRooms - allChatRooms"))
+}
+
+// AllTodos is the resolver for the allTodos field.
+func (r *queryResolver) AllTodos(ctx context.Context) ([]*model.Todo, error) {
+	panic(fmt.Errorf("not implemented: AllTodos - allTodos"))
+}
+
+// ChatRoom is the resolver for the chatRoom field.
+func (r *queryResolver) ChatRoom(ctx context.Context, id string) (*model.ChatRoom, error) {
+	panic(fmt.Errorf("not implemented: ChatRoom - chatRoom"))
+}
+
+// User is the resolver for the user field.
+func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID}, nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -42,3 +62,16 @@ func (r *Resolver) Todo() TodoResolver { return &todoResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type todoResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *todoResolver) Account(ctx context.Context, obj *model.Todo) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: Account - account"))
+}
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+	return r.todos, nil
+}
