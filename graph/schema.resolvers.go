@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/digitalocean/graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
 // Mutation returns MutationResolver implementation.

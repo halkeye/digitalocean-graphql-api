@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/digitalocean/graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
 //go:generate go run github.com/99designs/gqlgen generate

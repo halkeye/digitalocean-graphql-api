@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/digitalocean/graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.

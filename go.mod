@@ -1,4 +1,4 @@
-module github.com/digitalocean/graphql-api
+module github.com/halkeye/digitalocean-graphql-api
 
 go 1.22.0
 

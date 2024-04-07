@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/digitalocean/graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
 // ChatRoomMessages is the resolver for the chatRoomMessages field.
