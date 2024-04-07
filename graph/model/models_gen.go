@@ -43,7 +43,7 @@ type ChatRoom struct {
 	// The ID of an object
 	ID string `json:"id"`
 	// Chat room name
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 func (ChatRoom) IsNode() {}

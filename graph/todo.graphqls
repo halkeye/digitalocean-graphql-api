@@ -1,0 +1,50 @@
+extend type Query {
+  """Get all the todos"""
+  allTodos: [Todo!]!
+}
+
+extend type Mutation {
+  """Create a todo"""
+  createTodo(
+    """New Todo Information"""
+    input: NewTodo!
+  ): Todo!
+}
+
+## Tutorial #1
+
+"""
+Todo
+"""
+type Todo {
+  """Is it done"""
+  done: Boolean!
+  """The id of the object."""
+  id: ID!
+  """Text of the todo item"""
+  text: String!
+  """Who todo is it"""
+  user: User!
+}
+
+"""
+Who did it
+"""
+type User {
+  """The id of the user"""
+  id: ID!
+  "Username"
+  name: String!
+}
+
+"""
+Create a new Todo entry
+"""
+input NewTodo {
+  "text todo"
+  text: String!
+  "Who created it"
+  userId: String!
+}
+
+

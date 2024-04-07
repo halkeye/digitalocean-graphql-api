@@ -1,0 +1,51 @@
+### NOTES
+# * Probably don't need team / account listing as 1 bearer token only allows one team (for now)
+# or does it identify the user?
+#
+#
+
+## Digital ocean stuff
+
+"""
+Account Limits
+"""
+type AccountLimits {
+  """
+  How many droplets can you have at once
+  """
+  dropletLimit: Int!
+  """
+  How many volumes can you have at once
+  """
+  volumeLimit: Int!
+}
+
+"""
+Team information
+"""
+type Team implements Node {
+  """The id of the team"""
+  id: ID!
+  """What is the teams limits"""
+  limits: AccountLimits
+  """
+  Team UUID
+  """
+  uuid: String!
+}
+
+"""
+Account Information
+"""
+type Account implements Node {
+  """Email address"""
+  email: String!
+  """Has email been verified"""
+  emailVerified: Boolean!
+  """The id of the account"""
+  id: ID!
+  """Account Status"""
+  status: String!
+  """Account UUID"""
+  uuid: String!
+}

@@ -1,0 +1,57 @@
+
+## Tutorial #2
+## Out of date, but got me there - https://scribe.rip/@chris.czurylo/implementing-pagination-in-graphql-and-go-using-gqlgen-2ea3786a71dc
+#
+extend type Query {
+  """All chat rooms"""
+  allChatRooms: [ChatRoom!]!
+  """Get a specific chatroom"""
+  chatRoom(
+    """The ID of an object"""
+    id: ID!
+  ): ChatRoom!
+}
+
+# extend type Mutation {
+# }
+
+"""
+Chat Room
+"""
+type ChatRoom implements Node {
+  """Messages in room"""
+  chatRoomMessages(
+    """Skip"""
+    first: Int = 20,
+    """Cursor ID"""
+    after: ID
+  ): ChatRoomMessagesConnection
+  """The ID of an object"""
+  id: ID!
+  """Chat room name"""
+  name: String!
+}
+
+"""Chat Room Message"""
+type ChatRoomMessage implements Node {
+  """The ID of an object"""
+  id: ID!
+  """Message body"""
+  text: String
+}
+
+"Message Connections"
+type ChatRoomMessagesConnection {
+  """Edges"""
+  edges: [ChatRoomMessagesEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""Message Edge"""
+type ChatRoomMessagesEdge {
+  """Cursor"""
+  cursor: ID!
+  """Message Node"""
+  node: ChatRoomMessage
+}

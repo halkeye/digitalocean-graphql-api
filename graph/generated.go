@@ -39,6 +39,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	ChatRoom() ChatRoomResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Todo() TodoResolver
@@ -94,7 +95,6 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Account      func(childComplexity int) int
 		AllChatRooms func(childComplexity int) int
 		AllTodos     func(childComplexity int) int
 		ChatRoom     func(childComplexity int, id string) int
@@ -119,14 +119,16 @@ type ComplexityRoot struct {
 	}
 }
 
+type ChatRoomResolver interface {
+	ChatRoomMessages(ctx context.Context, obj *model.ChatRoom, first *int, after *string) (*model.ChatRoomMessagesConnection, error)
+}
 type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error)
 }
 type QueryResolver interface {
-	Account(ctx context.Context) (*model.Account, error)
 	AllChatRooms(ctx context.Context) ([]*model.ChatRoom, error)
-	AllTodos(ctx context.Context) ([]*model.Todo, error)
 	ChatRoom(ctx context.Context, id string) (*model.ChatRoom, error)
+	AllTodos(ctx context.Context) ([]*model.Todo, error)
 }
 type TodoResolver interface {
 	User(ctx context.Context, obj *model.Todo) (*model.User, error)
@@ -307,13 +309,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
-
-	case "Query.account":
-		if e.complexity.Query.Account == nil {
-			break
-		}
-
-		return e.complexity.Query.Account(childComplexity), true
 
 	case "Query.allChatRooms":
 		if e.complexity.Query.AllChatRooms == nil {
@@ -509,7 +504,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema.graphqls"
+//go:embed "chatroom.graphqls" "digitalocean.graphqls" "schema.graphqls" "todo.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -521,7 +516,10 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "chatroom.graphqls", Input: sourceData("chatroom.graphqls"), BuiltIn: false},
+	{Name: "digitalocean.graphqls", Input: sourceData("digitalocean.graphqls"), BuiltIn: false},
 	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
+	{Name: "todo.graphqls", Input: sourceData("todo.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -958,7 +956,7 @@ func (ec *executionContext) _ChatRoom_chatRoomMessages(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ChatRoomMessages, nil
+		return ec.resolvers.ChatRoom().ChatRoomMessages(rctx, obj, fc.Args["first"].(*int), fc.Args["after"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -976,8 +974,8 @@ func (ec *executionContext) fieldContext_ChatRoom_chatRoomMessages(ctx context.C
 	fc = &graphql.FieldContext{
 		Object:     "ChatRoom",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "edges":
@@ -1067,11 +1065,14 @@ func (ec *executionContext) _ChatRoom_name(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoom_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1602,59 +1603,6 @@ func (ec *executionContext) fieldContext_PageInfo_startCursor(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_account(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_account(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Account(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Account)
-	fc.Result = res
-	return ec.marshalOAccount2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐAccount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_account(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "email":
-				return ec.fieldContext_Account_email(ctx, field)
-			case "emailVerified":
-				return ec.fieldContext_Account_emailVerified(ctx, field)
-			case "id":
-				return ec.fieldContext_Account_id(ctx, field)
-			case "status":
-				return ec.fieldContext_Account_status(ctx, field)
-			case "uuid":
-				return ec.fieldContext_Account_uuid(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_allChatRooms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_allChatRooms(ctx, field)
 	if err != nil {
@@ -1702,60 +1650,6 @@ func (ec *executionContext) fieldContext_Query_allChatRooms(ctx context.Context,
 				return ec.fieldContext_ChatRoom_name(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ChatRoom", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_allTodos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_allTodos(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AllTodos(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Todo)
-	fc.Result = res
-	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_allTodos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "done":
-				return ec.fieldContext_Todo_done(ctx, field)
-			case "id":
-				return ec.fieldContext_Todo_id(ctx, field)
-			case "text":
-				return ec.fieldContext_Todo_text(ctx, field)
-			case "user":
-				return ec.fieldContext_Todo_user(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
 	}
 	return fc, nil
@@ -1820,6 +1714,60 @@ func (ec *executionContext) fieldContext_Query_chatRoom(ctx context.Context, fie
 	if fc.Args, err = ec.field_Query_chatRoom_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_allTodos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_allTodos(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AllTodos(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Todo)
+	fc.Result = res
+	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_allTodos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "done":
+				return ec.fieldContext_Todo_done(ctx, field)
+			case "id":
+				return ec.fieldContext_Todo_id(ctx, field)
+			case "text":
+				return ec.fieldContext_Todo_text(ctx, field)
+			case "user":
+				return ec.fieldContext_Todo_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -4325,14 +4273,48 @@ func (ec *executionContext) _ChatRoom(ctx context.Context, sel ast.SelectionSet,
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ChatRoom")
 		case "chatRoomMessages":
-			out.Values[i] = ec._ChatRoom_chatRoomMessages(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ChatRoom_chatRoomMessages(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "id":
 			out.Values[i] = ec._ChatRoom_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._ChatRoom_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4598,25 +4580,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "account":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_account(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "allChatRooms":
 			field := field
 
@@ -4639,7 +4602,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "allTodos":
+		case "chatRoom":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4648,7 +4611,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_allTodos(ctx, field)
+				res = ec._Query_chatRoom(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4661,7 +4624,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "chatRoom":
+		case "allTodos":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4670,7 +4633,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_chatRoom(ctx, field)
+				res = ec._Query_allTodos(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5725,13 +5688,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalOAccount2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐAccount(ctx context.Context, sel ast.SelectionSet, v *model.Account) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Account(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOAccountLimits2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx context.Context, sel ast.SelectionSet, v *model.AccountLimits) graphql.Marshaler {

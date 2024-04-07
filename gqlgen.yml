@@ -89,3 +89,7 @@ models:
     fields:
       user:
         resolver: true
+  ChatRoom:
+    fields:
+      chatRoomMessages:
+        resolver: true
