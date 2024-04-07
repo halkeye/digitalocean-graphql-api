@@ -120,15 +120,13 @@ func (r *queryResolver) AllChatRooms(ctx context.Context, first *int, after *str
 		i++
 	}
 
-	pageInfo := model.PageInfo{
-		StartCursor: mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[0].Node.ID))),
-		EndCursor:   mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[count-1].Node.ID))),
-		HasNextPage: hasNextPage,
-	}
-
 	mc := model.ChatRoomsConnection{
-		Edges:    edges[:count],
-		PageInfo: &pageInfo,
+		Edges: edges[:count],
+		PageInfo: &model.PageInfo{
+			StartCursor: mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[0].Node.ID))),
+			EndCursor:   mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[count-1].Node.ID))),
+			HasNextPage: hasNextPage,
+		},
 	}
 
 	return &mc, nil

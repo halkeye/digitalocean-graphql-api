@@ -2,6 +2,12 @@
 
 package model
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 // An object with an ID
 type Node interface {
 	IsNode()
@@ -120,6 +126,41 @@ type PageInfo struct {
 	StartCursor *string `json:"startCursor,omitempty"`
 }
 
+// Projects allow you to organize your resources into groups that fit the way you work. You can group resources (like Droplets, Spaces, load balancers, domains, and floating IPs) in ways that align with the applications you host on DigitalOcean.
+type Project struct {
+	// The id of the account
+	ID          string     `json:"id"`
+	Owner       *Team      `json:"owner"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description,omitempty"`
+	Purpose     string     `json:"purpose"`
+	Environment string     `json:"environment"`
+	IsDefault   bool       `json:"isDefault"`
+	CreatedAt   *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
+}
+
+func (Project) IsNode() {}
+
+// The id of the object.
+func (this Project) GetID() string { return this.ID }
+
+// Projects Connection
+type ProjectsConnection struct {
+	// Edges
+	Edges []*ProjectsEdge `json:"edges"`
+	// Pagination info
+	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+// Project Edge
+type ProjectsEdge struct {
+	// Cursor
+	Cursor string `json:"cursor"`
+	// Project Node
+	Node *Project `json:"node,omitempty"`
+}
+
 // All the queries
 type Query struct {
 }
@@ -131,7 +172,7 @@ type Team struct {
 	// What is the teams limits
 	Limits *AccountLimits `json:"limits,omitempty"`
 	// Team UUID
-	UUID string `json:"uuid"`
+	UUID uuid.UUID `json:"uuid"`
 }
 
 func (Team) IsNode() {}

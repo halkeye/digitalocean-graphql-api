@@ -11,9 +11,11 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/google/uuid"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -104,10 +106,34 @@ type ComplexityRoot struct {
 		StartCursor     func(childComplexity int) int
 	}
 
+	Project struct {
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		Environment func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsDefault   func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Owner       func(childComplexity int) int
+		Purpose     func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+	}
+
+	ProjectsConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	ProjectsEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Query struct {
 		AllChatRooms func(childComplexity int, first *int, after *string) int
 		AllTodos     func(childComplexity int) int
 		ChatRoom     func(childComplexity int, id string) int
+		Node         func(childComplexity int, id string) int
+		Projects     func(childComplexity int, first *int, after *string) int
 	}
 
 	Team struct {
@@ -136,8 +162,10 @@ type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error)
 }
 type QueryResolver interface {
+	Node(ctx context.Context, id string) (model.Node, error)
 	AllChatRooms(ctx context.Context, first *int, after *string) (*model.ChatRoomsConnection, error)
 	ChatRoom(ctx context.Context, id string) (*model.ChatRoom, error)
+	Projects(ctx context.Context, first *int, after *string) (*model.ProjectsConnection, error)
 	AllTodos(ctx context.Context) ([]*model.Todo, error)
 }
 type TodoResolver interface {
@@ -348,6 +376,97 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
+	case "Project.createdAt":
+		if e.complexity.Project.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Project.CreatedAt(childComplexity), true
+
+	case "Project.description":
+		if e.complexity.Project.Description == nil {
+			break
+		}
+
+		return e.complexity.Project.Description(childComplexity), true
+
+	case "Project.environment":
+		if e.complexity.Project.Environment == nil {
+			break
+		}
+
+		return e.complexity.Project.Environment(childComplexity), true
+
+	case "Project.id":
+		if e.complexity.Project.ID == nil {
+			break
+		}
+
+		return e.complexity.Project.ID(childComplexity), true
+
+	case "Project.isDefault":
+		if e.complexity.Project.IsDefault == nil {
+			break
+		}
+
+		return e.complexity.Project.IsDefault(childComplexity), true
+
+	case "Project.name":
+		if e.complexity.Project.Name == nil {
+			break
+		}
+
+		return e.complexity.Project.Name(childComplexity), true
+
+	case "Project.owner":
+		if e.complexity.Project.Owner == nil {
+			break
+		}
+
+		return e.complexity.Project.Owner(childComplexity), true
+
+	case "Project.purpose":
+		if e.complexity.Project.Purpose == nil {
+			break
+		}
+
+		return e.complexity.Project.Purpose(childComplexity), true
+
+	case "Project.updatedAt":
+		if e.complexity.Project.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Project.UpdatedAt(childComplexity), true
+
+	case "ProjectsConnection.edges":
+		if e.complexity.ProjectsConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.ProjectsConnection.Edges(childComplexity), true
+
+	case "ProjectsConnection.pageInfo":
+		if e.complexity.ProjectsConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.ProjectsConnection.PageInfo(childComplexity), true
+
+	case "ProjectsEdge.cursor":
+		if e.complexity.ProjectsEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.ProjectsEdge.Cursor(childComplexity), true
+
+	case "ProjectsEdge.node":
+		if e.complexity.ProjectsEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.ProjectsEdge.Node(childComplexity), true
+
 	case "Query.allChatRooms":
 		if e.complexity.Query.AllChatRooms == nil {
 			break
@@ -378,6 +497,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ChatRoom(childComplexity, args["id"].(string)), true
+
+	case "Query.node":
+		if e.complexity.Query.Node == nil {
+			break
+		}
+
+		args, err := ec.field_Query_node_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Node(childComplexity, args["id"].(string)), true
+
+	case "Query.projects":
+		if e.complexity.Query.Projects == nil {
+			break
+		}
+
+		args, err := ec.field_Query_projects_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Projects(childComplexity, args["first"].(*int), args["after"].(*string)), true
 
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
@@ -600,7 +743,7 @@ func (ec *executionContext) field_Mutation_createTodo_args(ctx context.Context, 
 	var arg0 model.NewTodo
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewTodo2githubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐNewTodo(ctx, tmp)
+		arg0, err = ec.unmarshalNNewTodo2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐNewTodo(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -660,6 +803,45 @@ func (ec *executionContext) field_Query_chatRoom_args(ctx context.Context, rawAr
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_node_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_projects_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg1, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg1
 	return args, nil
 }
 
@@ -1034,7 +1216,7 @@ func (ec *executionContext) _ChatRoom_chatRoomMessages(ctx context.Context, fiel
 	}
 	res := resTmp.(*model.ChatRoomMessagesConnection)
 	fc.Result = res
-	return ec.marshalOChatRoomMessagesConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesConnection(ctx, field.Selections, res)
+	return ec.marshalOChatRoomMessagesConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoom_chatRoomMessages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1268,7 +1450,7 @@ func (ec *executionContext) _ChatRoomMessagesConnection_edges(ctx context.Contex
 	}
 	res := resTmp.([]*model.ChatRoomMessagesEdge)
 	fc.Result = res
-	return ec.marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomMessagesConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1318,7 +1500,7 @@ func (ec *executionContext) _ChatRoomMessagesConnection_pageInfo(ctx context.Con
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomMessagesConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1413,7 +1595,7 @@ func (ec *executionContext) _ChatRoomMessagesEdge_node(ctx context.Context, fiel
 	}
 	res := resTmp.(*model.ChatRoomMessage)
 	fc.Result = res
-	return ec.marshalOChatRoomMessage2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessage(ctx, field.Selections, res)
+	return ec.marshalOChatRoomMessage2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomMessagesEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1463,7 +1645,7 @@ func (ec *executionContext) _ChatRoomsConnection_edges(ctx context.Context, fiel
 	}
 	res := resTmp.([]*model.ChatRoomsEdge)
 	fc.Result = res
-	return ec.marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomsConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1513,7 +1695,7 @@ func (ec *executionContext) _ChatRoomsConnection_pageInfo(ctx context.Context, f
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomsConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1608,7 +1790,7 @@ func (ec *executionContext) _ChatRoomsEdge_node(ctx context.Context, field graph
 	}
 	res := resTmp.(*model.ChatRoom)
 	fc.Result = res
-	return ec.marshalOChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, field.Selections, res)
+	return ec.marshalOChatRoom2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ChatRoomsEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1660,7 +1842,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1867,6 +2049,662 @@ func (ec *executionContext) fieldContext_PageInfo_startCursor(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Project_id(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_owner(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_owner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Owner, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Team)
+	fc.Result = res
+	return ec.marshalNTeam2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Team_id(ctx, field)
+			case "limits":
+				return ec.fieldContext_Team_limits(ctx, field)
+			case "uuid":
+				return ec.fieldContext_Team_uuid(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_name(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_description(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_purpose(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_purpose(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Purpose, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_purpose(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_environment(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_environment(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Environment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_environment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_isDefault(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_isDefault(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsDefault, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_isDefault(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Project_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Project) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Project_updatedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Project_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Project",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProjectsConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.ProjectsConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProjectsConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ProjectsEdge)
+	fc.Result = res
+	return ec.marshalNProjectsEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsEdgeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProjectsConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectsConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cursor":
+				return ec.fieldContext_ProjectsEdge_cursor(ctx, field)
+			case "node":
+				return ec.fieldContext_ProjectsEdge_node(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProjectsEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProjectsConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.ProjectsConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProjectsConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProjectsConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectsConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProjectsEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.ProjectsEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProjectsEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProjectsEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectsEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ProjectsEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.ProjectsEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ProjectsEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Project)
+	fc.Result = res
+	return ec.marshalOProject2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ProjectsEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ProjectsEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Project_id(ctx, field)
+			case "owner":
+				return ec.fieldContext_Project_owner(ctx, field)
+			case "name":
+				return ec.fieldContext_Project_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Project_description(ctx, field)
+			case "purpose":
+				return ec.fieldContext_Project_purpose(ctx, field)
+			case "environment":
+				return ec.fieldContext_Project_environment(ctx, field)
+			case "isDefault":
+				return ec.fieldContext_Project_isDefault(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Project_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Project_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Project", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_node(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Node(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(model.Node)
+	fc.Result = res
+	return ec.marshalONode2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐNode(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("FieldContext.Child cannot be called on type INTERFACE")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_node_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_allChatRooms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_allChatRooms(ctx, field)
 	if err != nil {
@@ -1892,7 +2730,7 @@ func (ec *executionContext) _Query_allChatRooms(ctx context.Context, field graph
 	}
 	res := resTmp.(*model.ChatRoomsConnection)
 	fc.Result = res
-	return ec.marshalOChatRoomsConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx, field.Selections, res)
+	return ec.marshalOChatRoomsConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_allChatRooms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1953,7 +2791,7 @@ func (ec *executionContext) _Query_chatRoom(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.ChatRoom)
 	fc.Result = res
-	return ec.marshalNChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, field.Selections, res)
+	return ec.marshalNChatRoom2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_chatRoom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1988,6 +2826,64 @@ func (ec *executionContext) fieldContext_Query_chatRoom(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_projects(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_projects(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Projects(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ProjectsConnection)
+	fc.Result = res
+	return ec.marshalOProjectsConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_projects(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_ProjectsConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_ProjectsConnection_pageInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ProjectsConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_projects_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_allTodos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_allTodos(ctx, field)
 	if err != nil {
@@ -2016,7 +2912,7 @@ func (ec *executionContext) _Query_allTodos(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_allTodos(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2240,7 +3136,7 @@ func (ec *executionContext) _Team_limits(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*model.AccountLimits)
 	fc.Result = res
-	return ec.marshalOAccountLimits2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx, field.Selections, res)
+	return ec.marshalOAccountLimits2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Team_limits(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2288,9 +3184,9 @@ func (ec *executionContext) _Team_uuid(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(uuid.UUID)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Team_uuid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2300,7 +3196,7 @@ func (ec *executionContext) fieldContext_Team_uuid(ctx context.Context, field gr
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type UUID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2466,7 +3362,7 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Todo_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4419,6 +5315,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Account(ctx, sel, obj)
+	case model.Project:
+		return ec._Project(ctx, sel, &obj)
+	case *model.Project:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Project(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -4916,6 +5819,161 @@ func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var projectImplementors = []string{"Project", "Node"}
+
+func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, obj *model.Project) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Project")
+		case "id":
+			out.Values[i] = ec._Project_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "owner":
+			out.Values[i] = ec._Project_owner(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Project_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Project_description(ctx, field, obj)
+		case "purpose":
+			out.Values[i] = ec._Project_purpose(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "environment":
+			out.Values[i] = ec._Project_environment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isDefault":
+			out.Values[i] = ec._Project_isDefault(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Project_createdAt(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._Project_updatedAt(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var projectsConnectionImplementors = []string{"ProjectsConnection"}
+
+func (ec *executionContext) _ProjectsConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ProjectsConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectsConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectsConnection")
+		case "edges":
+			out.Values[i] = ec._ProjectsConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._ProjectsConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var projectsEdgeImplementors = []string{"ProjectsEdge"}
+
+func (ec *executionContext) _ProjectsEdge(ctx context.Context, sel ast.SelectionSet, obj *model.ProjectsEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectsEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectsEdge")
+		case "cursor":
+			out.Values[i] = ec._ProjectsEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "node":
+			out.Values[i] = ec._ProjectsEdge_node(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -4935,6 +5993,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "node":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_node(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "allChatRooms":
 			field := field
 
@@ -4967,6 +6044,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "projects":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_projects(ctx, field)
 				return res
 			}
 
@@ -5545,11 +6641,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNChatRoom2githubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v model.ChatRoom) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoom2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v model.ChatRoom) graphql.Marshaler {
 	return ec._ChatRoom(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoom2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5559,7 +6655,7 @@ func (ec *executionContext) marshalNChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgr
 	return ec._ChatRoom(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoomMessagesEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoomMessagesEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5583,7 +6679,7 @@ func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋdi
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5603,7 +6699,7 @@ func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚕᚖgithubᚗcomᚋdi
 	return ret
 }
 
-func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdge(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessagesEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesEdge(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessagesEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5613,7 +6709,7 @@ func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋdigit
 	return ec._ChatRoomMessagesEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoomsEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoomsEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5637,7 +6733,7 @@ func (ec *executionContext) marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloc
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNChatRoomsEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNChatRoomsEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5657,7 +6753,7 @@ func (ec *executionContext) marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloc
 	return ret
 }
 
-func (ec *executionContext) marshalNChatRoomsEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNChatRoomsEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5697,12 +6793,12 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewTodo2githubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v interface{}) (model.NewTodo, error) {
+func (ec *executionContext) unmarshalNNewTodo2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v interface{}) (model.NewTodo, error) {
 	res, err := ec.unmarshalInputNewTodo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5712,26 +6808,7 @@ func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋdigitaloceanᚋgr
 	return ec._PageInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) marshalNTodo2githubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
-	return ec._Todo(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNProjectsEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ProjectsEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -5755,7 +6832,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgra
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
+			ret[i] = ec.marshalNProjectsEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -5775,7 +6852,90 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgra
 	return ret
 }
 
-func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNProjectsEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsEdge(ctx context.Context, sel ast.SelectionSet, v *model.ProjectsEdge) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ProjectsEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNTeam2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTeam(ctx context.Context, sel ast.SelectionSet, v *model.Team) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Team(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNTodo2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
+	return ec._Todo(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTodo2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTodo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -5785,11 +6945,26 @@ func (ec *executionContext) marshalNTodo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphq
 	return ec._Todo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
+	res, err := graphql.UnmarshalUUID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
+	res := graphql.MarshalUUID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6052,7 +7227,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOAccountLimits2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx context.Context, sel ast.SelectionSet, v *model.AccountLimits) graphql.Marshaler {
+func (ec *executionContext) marshalOAccountLimits2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx context.Context, sel ast.SelectionSet, v *model.AccountLimits) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -6085,28 +7260,28 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
+func (ec *executionContext) marshalOChatRoom2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ChatRoom(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOChatRoomMessage2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessage(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessage) graphql.Marshaler {
+func (ec *executionContext) marshalOChatRoomMessage2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessage(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessage) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ChatRoomMessage(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOChatRoomMessagesConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesConnection(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessagesConnection) graphql.Marshaler {
+func (ec *executionContext) marshalOChatRoomMessagesConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessagesConnection(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessagesConnection) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ChatRoomMessagesConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOChatRoomsConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsConnection) graphql.Marshaler {
+func (ec *executionContext) marshalOChatRoomsConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsConnection) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -6145,6 +7320,27 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) marshalONode2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐNode(ctx context.Context, sel ast.SelectionSet, v model.Node) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProject2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProject(ctx context.Context, sel ast.SelectionSet, v *model.Project) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Project(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProjectsConnection2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsConnection(ctx context.Context, sel ast.SelectionSet, v *model.ProjectsConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProjectsConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -6158,6 +7354,22 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalTime(*v)
 	return res
 }
 

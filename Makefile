@@ -67,15 +67,21 @@ build:
 run: build
 	/tmp/bin/${BINARY_NAME}
 
-## run/live: run the application with reloading on file changes
-.PHONY: run/live
-run/live:
-	go run github.com/cosmtrek/air@v1.43.0 \
+## live/run: run the application with reloading on file changes
+.PHONY: live/run
+live/run:
+	go run github.com/cosmtrek/air \
 		--build.cmd "make build" --build.bin "/tmp/bin/${BINARY_NAME}" --build.delay "100" \
 		--build.exclude_dir "" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 		--misc.clean_on_exit "true"
 
+## live/gqlgen: generate all the gql files
+.PHONY: live/gqlgen
+live/gqlgen:
+	go run github.com/loov/watchrun	\
+		-monitor "graph/**/*.graphqls" \
+		"go run github.com/99designs/gqlgen generate"
 
 # ==================================================================================== #
 # OPERATIONS

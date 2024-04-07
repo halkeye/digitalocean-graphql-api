@@ -1,7 +1,13 @@
 """
 All the queries
 """
-type Query
+type Query {
+  """Get node"""
+  node(
+    """ID of Node"""
+    id: ID!
+  ): Node
+}
 
 """
 All mutations
@@ -33,3 +39,12 @@ type PageInfo {
   startCursor: String
 }
 
+"""
+Time
+"""
+scalar Time
+
+"""
+UUID
+"""
+scalar UUID

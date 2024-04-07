@@ -4,6 +4,16 @@
 #
 #
 
+extend type Query {
+  """All projects"""
+  projects(
+    """Skip"""
+    first: Int = 20,
+    """Cursor ID"""
+    after: ID
+  ): ProjectsConnection
+}
+
 ## Digital ocean stuff
 
 """
@@ -31,7 +41,7 @@ type Team implements Node {
   """
   Team UUID
   """
-  uuid: String!
+  uuid: UUID!
 }
 
 """
@@ -48,4 +58,36 @@ type Account implements Node {
   status: String!
   """Account UUID"""
   uuid: String!
+}
+
+"""
+Projects allow you to organize your resources into groups that fit the way you work. You can group resources (like Droplets, Spaces, load balancers, domains, and floating IPs) in ways that align with the applications you host on DigitalOcean.
+"""
+type Project implements Node {
+    """The id of the account"""
+    id: ID!
+    owner: Team!
+    name: String!
+    description: String
+    purpose: String!
+    environment: String!
+    isDefault: Boolean!
+    createdAt: Time
+    updatedAt: Time
+}
+
+"""Projects Connection"""
+type ProjectsConnection {
+  """Edges"""
+  edges: [ProjectsEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""Project Edge"""
+type ProjectsEdge {
+  """Cursor"""
+  cursor: ID!
+  """Project Node"""
+  node: Project
 }
