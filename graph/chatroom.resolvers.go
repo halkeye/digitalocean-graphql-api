@@ -14,7 +14,6 @@ import (
 
 // ChatRoomMessages is the resolver for the chatRoomMessages field.
 func (r *chatRoomResolver) ChatRoomMessages(ctx context.Context, obj *model.ChatRoom, first *int, after *string) (*model.ChatRoomMessagesConnection, error) {
-
 	// The cursor is base64 encoded by convention, so we need to decode it first
 	var decodedCursor string
 	if after != nil {
@@ -75,14 +74,64 @@ func (r *chatRoomResolver) ChatRoomMessages(ctx context.Context, obj *model.Chat
 }
 
 // AllChatRooms is the resolver for the allChatRooms field.
-func (r *queryResolver) AllChatRooms(ctx context.Context) ([]*model.ChatRoom, error) {
-	chatRooms := make([]*model.ChatRoom, len(r.chatRooms))
-	idx := 0
-	for _, chatRoom := range r.chatRooms {
-		chatRooms[idx] = &chatRoom
-		idx = idx + 1
+func (r *queryResolver) AllChatRooms(ctx context.Context, first *int, after *string) (*model.ChatRoomsConnection, error) {
+	// The cursor is base64 encoded by convention, so we need to decode it first
+	var decodedCursor string
+	if after != nil {
+		b, err := base64.StdEncoding.DecodeString(*after)
+		if err != nil {
+			return nil, err
+		}
+		decodedCursor = string(b)
 	}
-	return chatRooms, nil
+
+	edges := make([]*model.ChatRoomsEdge, *first)
+	count := 0
+	currentPage := false
+
+	// If no cursor present start from the top
+	if decodedCursor == "" {
+		currentPage = true
+	}
+	hasNextPage := false
+
+	// Iterating over the mocked s to find the current page
+	// In real world use-case you should fetch only the required
+	// part of data from the database
+	i := 0
+	for _, v := range r.chatRooms {
+		if v.ID == decodedCursor {
+			currentPage = true
+		}
+
+		if currentPage && count < *first {
+			edges[count] = &model.ChatRoomsEdge{
+				Cursor: base64.StdEncoding.EncodeToString([]byte(v.ID)),
+				Node:   &v,
+			}
+			count++
+		}
+
+		// If there are any elements left after the current page
+		// we indicate that in the response
+		if count == *first && i < len(r.chatRooms) {
+			hasNextPage = true
+		}
+		i++
+	}
+
+	pageInfo := model.PageInfo{
+		StartCursor: mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[0].Node.ID))),
+		EndCursor:   mustStringPtr(base64.StdEncoding.EncodeToString([]byte(edges[count-1].Node.ID))),
+		HasNextPage: hasNextPage,
+	}
+
+	mc := model.ChatRoomsConnection{
+		Edges:    edges[:count],
+		PageInfo: &pageInfo,
+	}
+
+	return &mc, nil
 }
 
 // ChatRoom is the resolver for the chatRoom field.

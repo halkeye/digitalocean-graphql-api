@@ -93,3 +93,7 @@ models:
     fields:
       chatRoomMessages:
         resolver: true
+  Query:
+    fields:
+      allChatRooms:
+        resolver: true

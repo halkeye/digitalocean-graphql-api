@@ -80,6 +80,22 @@ type ChatRoomMessagesEdge struct {
 	Node *ChatRoomMessage `json:"node,omitempty"`
 }
 
+// Chat Room Connections
+type ChatRoomsConnection struct {
+	// Edges
+	Edges []*ChatRoomsEdge `json:"edges"`
+	// Pagination info
+	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+// Message Edge
+type ChatRoomsEdge struct {
+	// Cursor
+	Cursor string `json:"cursor"`
+	// Chat Room Node
+	Node *ChatRoom `json:"node,omitempty"`
+}
+
 // All mutations
 type Mutation struct {
 }

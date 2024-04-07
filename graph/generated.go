@@ -83,6 +83,16 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	ChatRoomsConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	ChatRoomsEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateTodo func(childComplexity int, input model.NewTodo) int
 	}
@@ -95,7 +105,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllChatRooms func(childComplexity int) int
+		AllChatRooms func(childComplexity int, first *int, after *string) int
 		AllTodos     func(childComplexity int) int
 		ChatRoom     func(childComplexity int, id string) int
 	}
@@ -126,7 +136,7 @@ type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error)
 }
 type QueryResolver interface {
-	AllChatRooms(ctx context.Context) ([]*model.ChatRoom, error)
+	AllChatRooms(ctx context.Context, first *int, after *string) (*model.ChatRoomsConnection, error)
 	ChatRoom(ctx context.Context, id string) (*model.ChatRoom, error)
 	AllTodos(ctx context.Context) ([]*model.Todo, error)
 }
@@ -270,6 +280,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ChatRoomMessagesEdge.Node(childComplexity), true
 
+	case "ChatRoomsConnection.edges":
+		if e.complexity.ChatRoomsConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.ChatRoomsConnection.Edges(childComplexity), true
+
+	case "ChatRoomsConnection.pageInfo":
+		if e.complexity.ChatRoomsConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.ChatRoomsConnection.PageInfo(childComplexity), true
+
+	case "ChatRoomsEdge.cursor":
+		if e.complexity.ChatRoomsEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.ChatRoomsEdge.Cursor(childComplexity), true
+
+	case "ChatRoomsEdge.node":
+		if e.complexity.ChatRoomsEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.ChatRoomsEdge.Node(childComplexity), true
+
 	case "Mutation.createTodo":
 		if e.complexity.Mutation.CreateTodo == nil {
 			break
@@ -315,7 +353,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.AllChatRooms(childComplexity), true
+		args, err := ec.field_Query_allChatRooms_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AllChatRooms(childComplexity, args["first"].(*int), args["after"].(*string)), true
 
 	case "Query.allTodos":
 		if e.complexity.Query.AllTodos == nil {
@@ -578,6 +621,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_allChatRooms_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg1, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg1
 	return args, nil
 }
 
@@ -1368,6 +1435,203 @@ func (ec *executionContext) fieldContext_ChatRoomMessagesEdge_node(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _ChatRoomsConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.ChatRoomsConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ChatRoomsConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ChatRoomsEdge)
+	fc.Result = res
+	return ec.marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ChatRoomsConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChatRoomsConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cursor":
+				return ec.fieldContext_ChatRoomsEdge_cursor(ctx, field)
+			case "node":
+				return ec.fieldContext_ChatRoomsEdge_node(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ChatRoomsEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ChatRoomsConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.ChatRoomsConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ChatRoomsConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ChatRoomsConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChatRoomsConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ChatRoomsEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.ChatRoomsEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ChatRoomsEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ChatRoomsEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChatRoomsEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ChatRoomsEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.ChatRoomsEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ChatRoomsEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ChatRoom)
+	fc.Result = res
+	return ec.marshalOChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ChatRoomsEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ChatRoomsEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "chatRoomMessages":
+				return ec.fieldContext_ChatRoom_chatRoomMessages(ctx, field)
+			case "id":
+				return ec.fieldContext_ChatRoom_id(ctx, field)
+			case "name":
+				return ec.fieldContext_ChatRoom_name(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ChatRoom", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createTodo(ctx, field)
 	if err != nil {
@@ -1617,21 +1881,18 @@ func (ec *executionContext) _Query_allChatRooms(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AllChatRooms(rctx)
+		return ec.resolvers.Query().AllChatRooms(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.ChatRoom)
+	res := resTmp.(*model.ChatRoomsConnection)
 	fc.Result = res
-	return ec.marshalNChatRoom2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomᚄ(ctx, field.Selections, res)
+	return ec.marshalOChatRoomsConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_allChatRooms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1642,15 +1903,24 @@ func (ec *executionContext) fieldContext_Query_allChatRooms(ctx context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "chatRoomMessages":
-				return ec.fieldContext_ChatRoom_chatRoomMessages(ctx, field)
-			case "id":
-				return ec.fieldContext_ChatRoom_id(ctx, field)
-			case "name":
-				return ec.fieldContext_ChatRoom_name(ctx, field)
+			case "edges":
+				return ec.fieldContext_ChatRoomsConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_ChatRoomsConnection_pageInfo(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ChatRoom", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ChatRoomsConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_allChatRooms_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4464,6 +4734,91 @@ func (ec *executionContext) _ChatRoomMessagesEdge(ctx context.Context, sel ast.S
 	return out
 }
 
+var chatRoomsConnectionImplementors = []string{"ChatRoomsConnection"}
+
+func (ec *executionContext) _ChatRoomsConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ChatRoomsConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, chatRoomsConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ChatRoomsConnection")
+		case "edges":
+			out.Values[i] = ec._ChatRoomsConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._ChatRoomsConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var chatRoomsEdgeImplementors = []string{"ChatRoomsEdge"}
+
+func (ec *executionContext) _ChatRoomsEdge(ctx context.Context, sel ast.SelectionSet, obj *model.ChatRoomsEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, chatRoomsEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ChatRoomsEdge")
+		case "cursor":
+			out.Values[i] = ec._ChatRoomsEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "node":
+			out.Values[i] = ec._ChatRoomsEdge_node(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -4590,9 +4945,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_allChatRooms(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -5197,50 +5549,6 @@ func (ec *executionContext) marshalNChatRoom2githubᚗcomᚋdigitaloceanᚋgraph
 	return ec._ChatRoom(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNChatRoom2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoom) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -5303,6 +5611,60 @@ func (ec *executionContext) marshalNChatRoomMessagesEdge2ᚖgithubᚗcomᚋdigit
 		return graphql.Null
 	}
 	return ec._ChatRoomMessagesEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNChatRoomsEdge2ᚕᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ChatRoomsEdge) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNChatRoomsEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNChatRoomsEdge2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsEdge(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsEdge) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ChatRoomsEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -5723,6 +6085,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOChatRoom2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoom(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoom) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ChatRoom(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOChatRoomMessage2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomMessage(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomMessage) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5735,6 +6104,13 @@ func (ec *executionContext) marshalOChatRoomMessagesConnection2ᚖgithubᚗcom�
 		return graphql.Null
 	}
 	return ec._ChatRoomMessagesConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOChatRoomsConnection2ᚖgithubᚗcomᚋdigitaloceanᚋgraphqlᚑapiᚋgraphᚋmodelᚐChatRoomsConnection(ctx context.Context, sel ast.SelectionSet, v *model.ChatRoomsConnection) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ChatRoomsConnection(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

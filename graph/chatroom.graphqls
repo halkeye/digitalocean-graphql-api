@@ -4,7 +4,12 @@
 #
 extend type Query {
   """All chat rooms"""
-  allChatRooms: [ChatRoom!]!
+  allChatRooms(
+    """Skip"""
+    first: Int = 20,
+    """Cursor ID"""
+    after: ID
+  ): ChatRoomsConnection
   """Get a specific chatroom"""
   chatRoom(
     """The ID of an object"""
@@ -40,7 +45,7 @@ type ChatRoomMessage implements Node {
   text: String
 }
 
-"Message Connections"
+"""Message Connections"""
 type ChatRoomMessagesConnection {
   """Edges"""
   edges: [ChatRoomMessagesEdge!]!
@@ -54,4 +59,20 @@ type ChatRoomMessagesEdge {
   cursor: ID!
   """Message Node"""
   node: ChatRoomMessage
+}
+
+"""Chat Room Connections"""
+type ChatRoomsConnection {
+  """Edges"""
+  edges: [ChatRoomsEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""Message Edge"""
+type ChatRoomsEdge {
+  """Cursor"""
+  cursor: ID!
+  """Chat Room Node"""
+  node: ChatRoom
 }
