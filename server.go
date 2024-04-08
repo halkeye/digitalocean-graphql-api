@@ -57,6 +57,7 @@ func main() {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
+	corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "authorization")
 
 	r.Use(cors.New(corsConfig))
 	r.Use(static.Serve("/", static.LocalFile("public", true)))
