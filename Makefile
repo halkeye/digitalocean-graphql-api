@@ -79,9 +79,7 @@ live/run:
 ## live/gqlgen: generate all the gql files
 .PHONY: live/gqlgen
 live/gqlgen:
-	go run github.com/loov/watchrun	\
-		-monitor "graph/**/*.graphqls" \
-		"go run github.com/99designs/gqlgen generate"
+	find graph -name '*.graphqls' | entr go run github.com/99designs/gqlgen generate
 
 # ==================================================================================== #
 # OPERATIONS
