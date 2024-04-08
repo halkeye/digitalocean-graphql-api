@@ -56,9 +56,7 @@ func main() {
 	r := gin.Default()
 
 	corsConfig := cors.DefaultConfig()
-	// corsConfig.AllowOrigins = []string{
-	// 	"http://google.com"
-	// }
+	corsConfig.AllowOrigins = []string{"*"}
 
 	r.Use(cors.New(corsConfig))
 	r.Use(static.Serve("/", static.LocalFile("public", true)))
