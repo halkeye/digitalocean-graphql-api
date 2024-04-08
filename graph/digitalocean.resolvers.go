@@ -9,20 +9,21 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/digitalocean/godo"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
-
+	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
+	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
-// Projects is the resolver for the projects field.
-func (r *queryResolver) Projects(ctx context.Context, first *int, after *string) (*model.ProjectsConnection, error) {
-	doClient, err := DoClientFromContext(ctx)
+// Resources is the resolver for the resources field.
+func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, first *int, after *string) (*model.ProjectResourcesConnection, error) {
+	doClient, err := digitalocean.For(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to get do client")
+		return nil, fmt.Errorf("unable to get do client: %w", err)
 	}
 
 	opts := &godo.ListOptions{
@@ -37,7 +38,101 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 		}
 		opts.Page, err = strconv.Atoi(string(b))
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to process cursor")
+			return nil, fmt.Errorf("unable to process cursor: %w", err)
+		}
+	}
+
+	edges := make([]*model.ProjectResourcesEdge, *first)
+	count := 0
+
+	projectResources, resp, err := doClient.Projects.ListResources(ctx, strings.Replace(obj.ID, "do:project:", "", 1), opts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get projects: %w", err)
+	}
+
+	for _, pr := range projectResources {
+		assignedAt, err := time.Parse(time.RFC3339, pr.AssignedAt)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse assignedAt at: %w", err)
+		}
+
+		id := fmt.Sprintf("do:projectresource:%s", pr.URN)
+		edges[count] = &model.ProjectResourcesEdge{
+			Cursor: base64.StdEncoding.EncodeToString([]byte(id)),
+			Node: &model.ProjectResource{
+				ID:         id,
+				AssignedAt: assignedAt,
+				Status:     pr.Status,
+			},
+		}
+		count++
+	}
+
+	mc := &model.ProjectResourcesConnection{
+		Edges: edges[:count],
+		PageInfo: &model.PageInfo{
+			HasPreviousPage: opts.Page != 1,
+			HasNextPage:     !resp.Links.IsLastPage(),
+		},
+	}
+	if mc.PageInfo.HasPreviousPage {
+		mc.PageInfo.StartCursor = mustStringPtr(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", opts.Page))))
+	}
+	if mc.PageInfo.HasNextPage {
+		mc.PageInfo.EndCursor = mustStringPtr(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", opts.Page+1))))
+	}
+
+	return mc, nil
+}
+
+// Resource is the resolver for the resource field.
+func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.ProjectResource) (model.Resource, error) {
+	fmt.Printf("ID: %s\n", obj.ID)
+	parts := strings.Split(strings.Replace(obj.ID, "do:projectresource:do:", "", 1), ":")
+	fmt.Printf("Parts: %v\n", parts)
+	switch parts[0] {
+	case "droplet":
+		return loaders.GetDroplet(ctx, parts[1])
+	case "app":
+		return loaders.GetApp(ctx, parts[1])
+	case "volume":
+		return nil, fmt.Errorf("projectResourceResolver.Resource - volume not implemented")
+	case "domain":
+		return loaders.GetDomain(ctx, parts[1])
+	case "spaces":
+		return nil, fmt.Errorf("projectResourceResolver.Resource - domain not implemented")
+	default:
+		panic(fmt.Errorf("not implemented: Resource - resource: %s for %s", parts[1], obj.ID))
+	}
+}
+
+// Projects is the resolver for the projects field.
+func (r *queryResolver) Projects(ctx context.Context, first *int, after *string) (*model.ProjectsConnection, error) {
+	doClient, err := digitalocean.For(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get do client: %w", err)
+	}
+
+	if first == nil {
+		first = new(int)
+		*first = 10
+	}
+
+	fmt.Printf("first: %v\n", first)
+
+	opts := &godo.ListOptions{
+		Page:    1,
+		PerPage: *first,
+	}
+
+	if after != nil {
+		b, err := base64.StdEncoding.DecodeString(*after)
+		if err != nil {
+			return nil, err
+		}
+		opts.Page, err = strconv.Atoi(string(b))
+		if err != nil {
+			return nil, fmt.Errorf("unable to process cursor: %w", err)
 		}
 	}
 
@@ -48,23 +143,23 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 
 	projects, resp, err := doClient.Projects.List(ctx, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to get projects")
+		return nil, fmt.Errorf("unable to get projects: %w", err)
 	}
 
 	for _, p := range projects {
 		parsedUUID, err := uuid.Parse(p.OwnerUUID)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to parse uuid")
+			return nil, fmt.Errorf("unable to parse uuid: %w", err)
 		}
 
 		createdAt, err := time.Parse(time.RFC3339, p.CreatedAt)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to parse created at")
+			return nil, fmt.Errorf("unable to parse created at: %w", err)
 		}
 
 		updatedAt, err := time.Parse(time.RFC3339, p.UpdatedAt)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to parse updated at")
+			return nil, fmt.Errorf("unable to parse updated at: %w", err)
 		}
 
 		id := fmt.Sprintf("do:project:%s", p.ID)
@@ -89,7 +184,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 	if resp.Links == nil {
 		page, err = resp.Links.CurrentPage()
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to get current page")
+			return nil, fmt.Errorf("unable to get current page: %w", err)
 		}
 	}
 	fmt.Printf("page: %d\n", page)
@@ -110,3 +205,12 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 
 	return mc, nil
 }
+
+// Project returns ProjectResolver implementation.
+func (r *Resolver) Project() ProjectResolver { return &projectResolver{r} }
+
+// ProjectResource returns ProjectResourceResolver implementation.
+func (r *Resolver) ProjectResource() ProjectResourceResolver { return &projectResourceResolver{r} }
+
+type projectResolver struct{ *Resolver }
+type projectResourceResolver struct{ *Resolver }

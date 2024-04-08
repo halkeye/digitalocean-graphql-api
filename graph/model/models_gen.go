@@ -15,6 +15,10 @@ type Node interface {
 	GetID() string
 }
 
+type Resource interface {
+	IsResource()
+}
+
 // Account Information
 type Account struct {
 	// Email address
@@ -42,77 +46,53 @@ type AccountLimits struct {
 	VolumeLimit int `json:"volumeLimit"`
 }
 
-// Chat Room
-type ChatRoom struct {
-	// Messages in room
-	ChatRoomMessages *ChatRoomMessagesConnection `json:"chatRoomMessages,omitempty"`
-	// The ID of an object
-	ID string `json:"id"`
-	// Chat room name
-	Name string `json:"name"`
+type App struct {
+	ID                     string     `json:"id"`
+	Owner                  *Team      `json:"owner"`
+	LastDeploymentActiveAt *time.Time `json:"lastDeploymentActiveAt,omitempty"`
+	DefaultIngress         *string    `json:"defaultIngress,omitempty"`
+	CreatedAt              *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt              *time.Time `json:"updatedAt,omitempty"`
 }
 
-func (ChatRoom) IsNode() {}
+func (App) IsResource() {}
+
+func (App) IsNode() {}
 
 // The id of the object.
-func (this ChatRoom) GetID() string { return this.ID }
+func (this App) GetID() string { return this.ID }
 
-// Chat Room Message
-type ChatRoomMessage struct {
-	// The ID of an object
-	ID string `json:"id"`
-	// Message body
-	Text *string `json:"text,omitempty"`
+type Domain struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	TTL      int     `json:"TTL"`
+	ZoneFile *string `json:"ZoneFile,omitempty"`
 }
 
-func (ChatRoomMessage) IsNode() {}
+func (Domain) IsResource() {}
+
+func (Domain) IsNode() {}
 
 // The id of the object.
-func (this ChatRoomMessage) GetID() string { return this.ID }
+func (this Domain) GetID() string { return this.ID }
 
-// Message Connections
-type ChatRoomMessagesConnection struct {
-	// Edges
-	Edges []*ChatRoomMessagesEdge `json:"edges"`
-	// Pagination info
-	PageInfo *PageInfo `json:"pageInfo"`
+type Droplet struct {
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Memory    *int    `json:"memory,omitempty"`
+	Vcpus     *int    `json:"vcpus,omitempty"`
+	Disk      *int    `json:"disk,omitempty"`
+	Region    *Region `json:"region,omitempty"`
+	SizeSlug  *string `json:"sizeSlug,omitempty"`
+	BackupIDs []int   `json:"backupIDs"`
 }
 
-// Message Edge
-type ChatRoomMessagesEdge struct {
-	// Cursor
-	Cursor string `json:"cursor"`
-	// Message Node
-	Node *ChatRoomMessage `json:"node,omitempty"`
-}
+func (Droplet) IsResource() {}
 
-// Chat Room Connections
-type ChatRoomsConnection struct {
-	// Edges
-	Edges []*ChatRoomsEdge `json:"edges"`
-	// Pagination info
-	PageInfo *PageInfo `json:"pageInfo"`
-}
+func (Droplet) IsNode() {}
 
-// Message Edge
-type ChatRoomsEdge struct {
-	// Cursor
-	Cursor string `json:"cursor"`
-	// Chat Room Node
-	Node *ChatRoom `json:"node,omitempty"`
-}
-
-// All mutations
-type Mutation struct {
-}
-
-// Create a new Todo entry
-type NewTodo struct {
-	// text todo
-	Text string `json:"text"`
-	// Who created it
-	UserID string `json:"userId"`
-}
+// The id of the object.
+func (this Droplet) GetID() string { return this.ID }
 
 // Information about pagination in a connection.
 type PageInfo struct {
@@ -138,12 +118,37 @@ type Project struct {
 	IsDefault   bool       `json:"isDefault"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
+	// All projects
+	Resources *ProjectResourcesConnection `json:"resources,omitempty"`
 }
 
 func (Project) IsNode() {}
 
 // The id of the object.
 func (this Project) GetID() string { return this.ID }
+
+type ProjectResource struct {
+	ID         string    `json:"id"`
+	AssignedAt time.Time `json:"assignedAt"`
+	Resource   Resource  `json:"resource,omitempty"`
+	Status     string    `json:"status"`
+}
+
+// ProjectResources Connection
+type ProjectResourcesConnection struct {
+	// Edges
+	Edges []*ProjectResourcesEdge `json:"edges"`
+	// Pagination info
+	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+// ProjectResources Edge
+type ProjectResourcesEdge struct {
+	// Cursor
+	Cursor string `json:"cursor"`
+	// Project Node
+	Node *ProjectResource `json:"node,omitempty"`
+}
 
 // Projects Connection
 type ProjectsConnection struct {
@@ -157,13 +162,26 @@ type ProjectsConnection struct {
 type ProjectsEdge struct {
 	// Cursor
 	Cursor string `json:"cursor"`
-	// Project Node
+	// Project Resource Node
 	Node *Project `json:"node,omitempty"`
 }
 
 // All the queries
 type Query struct {
 }
+
+type Region struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Sizes     []string `json:"sizes"`
+	Available *bool    `json:"available,omitempty"`
+	Features  []string `json:"features"`
+}
+
+func (Region) IsNode() {}
+
+// The id of the object.
+func (this Region) GetID() string { return this.ID }
 
 // Team information
 type Team struct {
@@ -180,10 +198,13 @@ func (Team) IsNode() {}
 // The id of the object.
 func (this Team) GetID() string { return this.ID }
 
-// Who did it
-type User struct {
-	// The id of the user
+type Volume struct {
 	ID string `json:"id"`
-	// Username
-	Name string `json:"name"`
 }
+
+func (Volume) IsResource() {}
+
+func (Volume) IsNode() {}
+
+// The id of the object.
+func (this Volume) GetID() string { return this.ID }

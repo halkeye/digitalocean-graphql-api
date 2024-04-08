@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -12,17 +11,20 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/digitalocean/godo"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph"
+	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
+	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 )
 
 // Defining the Graphql handler
 func graphqlHandler() gin.HandlerFunc {
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.NewResolver()))
 	// see https://gqlgen.com/reference/complexity/#custom-complexity-calculation
-	h.Use(extension.FixedComplexityLimit(20)) // Dont allow complex queries
+	h.Use(extension.FixedComplexityLimit(100)) // Dont allow complex queries
 
 	// allow websockets
 	h.AddTransport(&transport.Websocket{
@@ -58,21 +60,27 @@ func main() {
 	corsConfig.AllowOrigins = []string{"http://google.com"}
 
 	r.Use(cors.New(corsConfig))
-	r.Use(DOContextToContextMiddleware())
-	r.POST("/query", graphqlHandler())
-	r.GET("/", playgroundHandler())
+	r.Use(static.Serve("/", static.LocalFile("frontend/dist", true)))
+	r.POST("/query", DOContextToContextMiddleware(), graphqlHandler())
+	r.GET("/__graphql", playgroundHandler())
 	r.Run()
+}
+
+func LoadersMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request = c.Request.WithContext(loaders.WithContext(c.Request.Context()))
+		c.Next()
+	}
 }
 
 func DOContextToContextMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearerToken, err := extractBearerToken(c.GetHeader("Authorization"))
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, map[string]string{"message": "not authorized"})
 			return
 		}
 		client := godo.NewFromToken(bearerToken)
-		ctx := context.WithValue(c.Request.Context(), graph.DOContextKey, client)
+		ctx := digitalocean.WithContext(c.Request.Context(), client)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
