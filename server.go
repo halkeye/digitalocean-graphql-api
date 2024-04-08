@@ -60,7 +60,7 @@ func main() {
 	corsConfig.AllowOrigins = []string{"http://google.com"}
 
 	r.Use(cors.New(corsConfig))
-	r.Use(static.Serve("/", static.LocalFile("frontend/dist", true)))
+	r.Use(static.Serve("/", static.LocalFile("public", true)))
 	r.POST("/query", DOContextToContextMiddleware(), graphqlHandler())
 	r.GET("/__graphql", playgroundHandler())
 	r.Run()
