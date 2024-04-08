@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -29,10 +28,10 @@ func graphqlHandler() gin.HandlerFunc {
 	// allow websockets
 	h.AddTransport(&transport.Websocket{
 		Upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				// Check against your desired domains here
-				return r.Host == "example.org"
-			},
+			// CheckOrigin: func(r *http.Request) bool {
+			// 	// Check against your desired domains here
+			// 	return r.Host == "example.org"
+			// },
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
@@ -57,7 +56,9 @@ func main() {
 	r := gin.Default()
 
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://google.com"}
+	// corsConfig.AllowOrigins = []string{
+	// 	"http://google.com"
+	// }
 
 	r.Use(cors.New(corsConfig))
 	r.Use(static.Serve("/", static.LocalFile("public", true)))
