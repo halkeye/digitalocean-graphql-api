@@ -14,6 +14,7 @@ import (
 
 	"github.com/digitalocean/godo"
 	"github.com/google/uuid"
+
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
@@ -118,8 +119,6 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 		*first = 10
 	}
 
-	fmt.Printf("first: %v\n", first)
-
 	opts := &godo.ListOptions{
 		Page:    1,
 		PerPage: *first,
@@ -136,7 +135,9 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 		}
 	}
 
-	fmt.Println(opts)
+	fmt.Printf("[Projects] first: %v\n", first)
+	fmt.Printf("[Projects] opts.Page: %d\n", opts.Page)
+	fmt.Printf("[Projects] opts.PerPage: %d\n", opts.PerPage)
 
 	edges := make([]*model.ProjectsEdge, *first)
 	count := 0
@@ -187,7 +188,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 			return nil, fmt.Errorf("unable to get current page: %w", err)
 		}
 	}
-	fmt.Printf("page: %d\n", page)
+	fmt.Printf("[Projects] next page: %d\n", page)
 
 	mc := &model.ProjectsConnection{
 		Edges: edges[:count],
@@ -197,7 +198,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 		},
 	}
 	if mc.PageInfo.HasPreviousPage {
-		mc.PageInfo.StartCursor = mustStringPtr(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", opts.Page))))
+		mc.PageInfo.StartCursor = mustStringPtr(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", opts.Page-1))))
 	}
 	if mc.PageInfo.HasNextPage {
 		mc.PageInfo.EndCursor = mustStringPtr(base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d", opts.Page+1))))
