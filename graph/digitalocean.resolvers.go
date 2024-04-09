@@ -88,9 +88,9 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 
 // Resource is the resolver for the resource field.
 func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.ProjectResource) (model.Resource, error) {
-	fmt.Printf("ID: %s\n", obj.ID)
+	fmt.Printf("[Resource] ID: %s\n", obj.ID)
 	parts := strings.Split(strings.Replace(obj.ID, "do:projectresource:do:", "", 1), ":")
-	fmt.Printf("Parts: %v\n", parts)
+	fmt.Printf("[Resource] Parts: %v\n", parts)
 	switch parts[0] {
 	case "droplet":
 		return loaders.GetDroplet(ctx, parts[1])
