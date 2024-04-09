@@ -135,7 +135,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 		}
 	}
 
-	fmt.Printf("[Projects] first: %v\n", first)
+	fmt.Printf("[Projects] first: %v\n", *first)
 	fmt.Printf("[Projects] opts.Page: %d\n", opts.Page)
 	fmt.Printf("[Projects] opts.PerPage: %d\n", opts.PerPage)
 
@@ -146,6 +146,8 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get projects: %w", err)
 	}
+	fmt.Printf("[Projects] resp: %+v\n", resp)
+	fmt.Printf("[Projects] projects: %+v\n", projects)
 
 	for _, p := range projects {
 		parsedUUID, err := uuid.Parse(p.OwnerUUID)
