@@ -29,6 +29,14 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 		return nil, fmt.Errorf("unable to get do client: %w", err)
 	}
 
+	ll, err := logger.For(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get do client: %w", err)
+	}
+
+	ll = ll.WithField("resolver", "Resources").WithField("parent.id", obj.ID)
+	ll.Info("debug")
+
 	opts := &godo.ListOptions{
 		Page:    1,
 		PerPage: *first,
@@ -90,9 +98,13 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 
 // Resource is the resolver for the resource field.
 func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.ProjectResource) (model.Resource, error) {
-	fmt.Printf("[Resource] ID: %s\n", obj.ID)
+	ll, err := logger.For(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get do client: %w", err)
+	}
+	ll = ll.WithField("resolver", "resolver").WithField("parent.id", obj.ID)
+	ll.Info("debug")
 	parts := strings.Split(strings.Replace(obj.ID, "do:projectresource:do:", "", 1), ":")
-	fmt.Printf("[Resource] Parts: %v\n", parts)
 	switch parts[0] {
 	case "droplet":
 		return loaders.GetDroplet(ctx, parts[1])

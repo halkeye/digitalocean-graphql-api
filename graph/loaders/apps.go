@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
+	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
@@ -18,7 +19,16 @@ type appReader struct {
 // getApps implements a batch function that can retrieve many apps by ID,
 // for use in a dataloader
 func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App, []error) {
-	fmt.Printf("appIDs: %v\n", appIDs)
+	apps := make([]*model.App, 0, len(appIDs))
+	errs := make([]error, 0, len(appIDs))
+
+	ll, err := logger.For(ctx)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
+		return apps, errs
+	}
+	ll = ll.WithField("reader", "app").WithField("method", "getApps").WithField("appIDs", appIDs)
+	ll.Info("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM apps WHERE id IN (?`+strings.Repeat(",?", len(appIDs)-1)+`)`)
 	// if err != nil {
@@ -31,9 +41,6 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	// 	return nil, []error{err}
 	// }
 	// defer rows.Close()
-	apps := make([]*model.App, 0, len(appIDs))
-	errs := make([]error, 0, len(appIDs))
-
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
@@ -48,6 +55,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	// create options. initially, these will be blank
 	opt := &godo.ListOptions{}
 	for {
+		ll.WithField("opt", opt).Info("doClient.Apps.List")
 		clientApps, resp, err := doClient.Apps.List(ctx, opt)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))

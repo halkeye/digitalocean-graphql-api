@@ -7,6 +7,7 @@ import (
 	"github.com/digitalocean/godo"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
+	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
@@ -17,8 +18,6 @@ type dropletReader struct {
 // getDroplets implements a batch function that can retrieve many droplets by ID,
 // for use in a dataloader
 func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([]*model.Droplet, []error) {
-	fmt.Printf("dropletIDs: %v\n", dropletIDs)
-
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM droplets WHERE id IN (?`+strings.Repeat(",?", len(dropletIDs)-1)+`)`)
 	// if err != nil {
 	// 	return nil, []error{err}
@@ -32,6 +31,14 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	// defer rows.Close()
 	droplets := make([]*model.Droplet, 0, len(dropletIDs))
 	errs := make([]error, 0, len(dropletIDs))
+
+	ll, err := logger.For(ctx)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
+		return droplets, errs
+	}
+	ll = ll.WithField("reader", "droplet").WithField("method", "getDroplets").WithField("dropletIDs", dropletIDs)
+	ll.Info("debug")
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
@@ -47,6 +54,7 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	// create options. initially, these will be blank
 	opt := &godo.ListOptions{}
 	for {
+		ll.WithField("opt", opt).Info("doClient.Droplets.List")
 		clientDroplets, resp, err := doClient.Droplets.List(ctx, opt)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))

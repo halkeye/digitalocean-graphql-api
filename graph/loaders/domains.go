@@ -7,6 +7,7 @@ import (
 	"github.com/digitalocean/godo"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
+	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
@@ -17,7 +18,16 @@ type domainReader struct {
 // getDomains implements a batch function that can retrieve many domains by ID,
 // for use in a dataloader
 func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*model.Domain, []error) {
-	fmt.Printf("domainIDs: %v\n", domainIDs)
+	domains := make([]*model.Domain, 0, len(domainIDs))
+	errs := make([]error, 0, len(domainIDs))
+
+	ll, err := logger.For(ctx)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
+		return domains, errs
+	}
+	ll = ll.WithField("reader", "domain").WithField("method", "getDomains").WithField("domainsIDs", domainIDs)
+	ll.Info("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM domains WHERE id IN (?`+strings.Repeat(",?", len(domainIDs)-1)+`)`)
 	// if err != nil {
@@ -30,8 +40,6 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 	// 	return nil, []error{err}
 	// }
 	// defer rows.Close()
-	domains := make([]*model.Domain, 0, len(domainIDs))
-	errs := make([]error, 0, len(domainIDs))
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
@@ -47,6 +55,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 	// create options. initially, these will be blank
 	opt := &godo.ListOptions{}
 	for {
+		ll.WithField("opt", opt).Info("doClient.Domains.List")
 		clientDomains, resp, err := doClient.Domains.List(ctx, opt)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
