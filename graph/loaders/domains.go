@@ -85,7 +85,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 	}
 
 	for id, pos := range domainIDMap {
-		errs[pos] = fmt.Errorf("%d is not found", id)
+		errs[pos] = fmt.Errorf("%s is not found", id)
 	}
 
 	return domains, errs

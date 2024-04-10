@@ -89,7 +89,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	}
 
 	for id, pos := range appIDMap {
-		errs[pos] = fmt.Errorf("%d is not found", id)
+		errs[pos] = fmt.Errorf("%s is not found", id)
 	}
 
 	return apps, errs

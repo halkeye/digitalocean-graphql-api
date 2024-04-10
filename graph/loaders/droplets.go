@@ -92,7 +92,7 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	}
 
 	for id, pos := range dropletIDMap {
-		errs[pos] = fmt.Errorf("%d is not found", id)
+		errs[pos] = fmt.Errorf("%s is not found", id)
 	}
 
 	return droplets, errs
