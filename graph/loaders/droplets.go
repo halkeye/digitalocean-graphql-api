@@ -52,10 +52,10 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	}
 
 	// create options. initially, these will be blank
-	opt := &godo.ListOptions{}
+	opts := &godo.ListOptions{}
 	for {
-		ll.WithField("opt", opt).Info("doClient.Droplets.List")
-		clientDroplets, resp, err := doClient.Droplets.List(ctx, opt)
+		ll.WithField("opts", opts).Info("doClient.Droplets.List")
+		clientDroplets, resp, err := doClient.Droplets.List(ctx, opts)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
 			return droplets, errs
@@ -91,7 +91,7 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 		}
 
 		// set the page we want for the next request
-		opt.Page = page + 1
+		opts.Page = page + 1
 	}
 
 	return droplets, errs

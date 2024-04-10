@@ -53,10 +53,10 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 	}
 
 	// create options. initially, these will be blank
-	opt := &godo.ListOptions{}
+	opts := &godo.ListOptions{}
 	for {
-		ll.WithField("opt", opt).Info("doClient.Domains.List")
-		clientDomains, resp, err := doClient.Domains.List(ctx, opt)
+		ll.WithField("opts", opts).Info("doClient.Domains.List")
+		clientDomains, resp, err := doClient.Domains.List(ctx, opts)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
 			return domains, errs
@@ -85,7 +85,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 		}
 
 		// set the page we want for the next request
-		opt.Page = page + 1
+		opts.Page = page + 1
 	}
 
 	return domains, errs

@@ -53,10 +53,10 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	}
 
 	// create options. initially, these will be blank
-	opt := &godo.ListOptions{}
+	opts := &godo.ListOptions{}
 	for {
-		ll.WithField("opt", opt).Info("doClient.Apps.List")
-		clientApps, resp, err := doClient.Apps.List(ctx, opt)
+		ll.WithField("opts", opts).Info("doClient.Apps.List")
+		clientApps, resp, err := doClient.Apps.List(ctx, opts)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
 			return apps, errs
@@ -87,7 +87,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 		}
 
 		// set the page we want for the next request
-		opt.Page = page + 1
+		opts.Page = page + 1
 	}
 
 	return apps, errs

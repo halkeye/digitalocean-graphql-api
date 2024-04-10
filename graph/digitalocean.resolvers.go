@@ -56,6 +56,8 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 	edges := make([]*model.ProjectResourcesEdge, *first)
 	count := 0
 
+	ll.WithField("project.id", strings.Replace(obj.ID, "do:project:", "", 1)).WithField("opts", opts).Info("doClient.Projects.ListResources")
+
 	projectResources, resp, err := doClient.Projects.ListResources(ctx, strings.Replace(obj.ID, "do:project:", "", 1), opts)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get projects: %w", err)

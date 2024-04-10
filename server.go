@@ -63,6 +63,8 @@ func main() {
 
 	r.Use(requestid.New(requestid.WithCustomHeaderStrKey("x-request-id")))
 	r.Use(LoggerMiddleware(log))
+	r.Use(LoadersMiddleware())
+
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
 	corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "authorization")
