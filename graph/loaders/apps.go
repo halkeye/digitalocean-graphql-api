@@ -19,8 +19,8 @@ type appReader struct {
 // getApps implements a batch function that can retrieve many apps by ID,
 // for use in a dataloader
 func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App, []error) {
-	apps := make([]*model.App, 0, len(appIDs))
-	errs := make([]error, 0, len(appIDs))
+	apps := make([]*model.App, len(appIDs))
+	errs := make([]error, len(appIDs))
 
 	ll, err := logger.For(ctx)
 	if err != nil {
@@ -58,12 +58,12 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 		ll.WithField("opts", opts).Info("doClient.Apps.List")
 		clientApps, resp, err := doClient.Apps.List(ctx, opts)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
-			return apps, errs
+			return nil, []error{fmt.Errorf("unable to get apps: %w", err)}
 		}
 
 		for _, app := range clientApps {
-			if pos, ok := appIDMap[app.URN()]; ok {
+			if pos, ok := appIDMap[app.ID]; ok {
+				delete(appIDMap, app.ID)
 				apps[pos] = &model.App{
 					ID:                     app.URN(),
 					Owner:                  &model.Team{UUID: uuid.MustParse(app.OwnerUUID)},
@@ -81,13 +81,15 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 
 		page, err := resp.Links.CurrentPage()
 		if err != nil {
-			errs = append(errs, fmt.Errorf("unable to get current page: %w", err))
-			return apps, errs
-
+			return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
 		}
 
 		// set the page we want for the next request
 		opts.Page = page + 1
+	}
+
+	for id, pos := range appIDMap {
+		errs[pos] = fmt.Errorf("%d is not found", id)
 	}
 
 	return apps, errs

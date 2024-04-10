@@ -29,21 +29,16 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	// 	return nil, []error{err}
 	// }
 	// defer rows.Close()
-	droplets := make([]*model.Droplet, 0, len(dropletIDs))
-	errs := make([]error, 0, len(dropletIDs))
-
 	ll, err := logger.For(ctx)
 	if err != nil {
-		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
-		return droplets, errs
+		return nil, []error{fmt.Errorf("unable to get do client: %w", err)}
 	}
 	ll = ll.WithField("reader", "droplet").WithField("method", "getDroplets").WithField("dropletIDs", dropletIDs)
 	ll.Info("debug")
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
-		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
-		return droplets, errs
+		return nil, []error{fmt.Errorf("unable to get do client: %w", err)}
 	}
 
 	dropletIDMap := map[string]int{}
@@ -51,18 +46,22 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 		dropletIDMap[dropletID] = pos
 	}
 
+	droplets := make([]*model.Droplet, len(dropletIDs))
+	errs := make([]error, len(dropletIDs))
+
 	// create options. initially, these will be blank
 	opts := &godo.ListOptions{}
 	for {
 		ll.WithField("opts", opts).Info("doClient.Droplets.List")
 		clientDroplets, resp, err := doClient.Droplets.List(ctx, opts)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
-			return droplets, errs
+			return nil, []error{fmt.Errorf("unable to get droplets: %w", err)}
 		}
 
 		for _, droplet := range clientDroplets {
-			if pos, ok := dropletIDMap[droplet.URN()]; ok {
+			if pos, ok := dropletIDMap[fmt.Sprint(droplet.ID)]; ok {
+				delete(dropletIDMap, fmt.Sprint(droplet.ID))
+				errs[pos] = nil
 				droplets[pos] = &model.Droplet{
 					ID:     droplet.URN(),
 					Name:   droplet.Name,
@@ -85,13 +84,15 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 
 		page, err := resp.Links.CurrentPage()
 		if err != nil {
-			errs = append(errs, fmt.Errorf("unable to get current page: %w", err))
-			return droplets, errs
-
+			return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
 		}
 
 		// set the page we want for the next request
 		opts.Page = page + 1
+	}
+
+	for id, pos := range dropletIDMap {
+		errs[pos] = fmt.Errorf("%d is not found", id)
 	}
 
 	return droplets, errs

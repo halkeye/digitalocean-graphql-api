@@ -71,7 +71,7 @@ run: build
 .PHONY: live/run
 live/run:
 	go run github.com/cosmtrek/air \
-		--build.cmd "make build" --build.bin "/tmp/bin/${BINARY_NAME}" --build.delay "100" \
+		--build.cmd "go run ." --build.delay "100" \
 		--build.exclude_dir "frontend,public" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 		--misc.clean_on_exit "true"
