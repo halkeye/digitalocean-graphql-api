@@ -7,10 +7,14 @@
 extend type Query {
   """All projects"""
   projects(
-    """Page Size"""
+    """Num after the after cursor"""
     first: Int = 20,
-    """Cursor ID"""
+    """After Cursor"""
     after: String
+    """Num before the before cursor"""
+    last: Int = 20,
+    """Before Cursor ID"""
+    before: String
   ): ProjectsConnection
 }
 

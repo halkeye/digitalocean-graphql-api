@@ -7,10 +7,13 @@ require (
 	github.com/cosmtrek/air v1.51.0
 	github.com/digitalocean/godo v1.112.0
 	github.com/gin-contrib/cors v1.7.1
+	github.com/gin-contrib/requestid v1.0.0
 	github.com/gin-contrib/static v1.1.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.1
+	github.com/sirupsen/logrus v1.9.3
+	github.com/toorop/gin-logrus v0.0.0-20210225092905-2c785434f26f
 	github.com/vektah/gqlparser/v2 v2.5.11
 	github.com/vikstrous/dataloadgen v0.0.6
 )

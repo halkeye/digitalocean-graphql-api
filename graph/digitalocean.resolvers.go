@@ -14,9 +14,11 @@ import (
 
 	"github.com/digitalocean/godo"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
+	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
 
@@ -108,11 +110,23 @@ func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.Proje
 }
 
 // Projects is the resolver for the projects field.
-func (r *queryResolver) Projects(ctx context.Context, first *int, after *string) (*model.ProjectsConnection, error) {
+func (r *queryResolver) Projects(ctx context.Context, first *int, after *string, last *int, before *string) (*model.ProjectsConnection, error) {
+	// FIXME - ordering should be consistent -
+	// https://relay.dev/graphql/connections.htm#sec-Edge-order
+	// You may order the edges however your business logic dictates, and may determine the ordering based upon additional arguments not covered by this specification. But the ordering must be consistent from page to page, and importantly, The ordering of edges should be the same when using first/after as when using last/before, all other arguments being equal. It should not be reversed when using last/before. More formally:
+	// When before: cursor is used, the edge closest to cursor must come last in the result edges.
+	// When after: cursor is used, the edge closest to cursor must come first in the result edges.
+
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get do client: %w", err)
 	}
+
+	ll, err := logger.For(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get do client: %w", err)
+	}
+	ll = ll.WithField("resolver", "projects")
 
 	if first == nil {
 		first = new(int)
@@ -134,10 +148,12 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 			return nil, fmt.Errorf("unable to process cursor: %w", err)
 		}
 	}
-
-	fmt.Printf("[Projects] first: %v\n", *first)
-	fmt.Printf("[Projects] opts.Page: %d\n", opts.Page)
-	fmt.Printf("[Projects] opts.PerPage: %d\n", opts.PerPage)
+	ll = ll.WithFields(logrus.Fields{
+		"first":        *first,
+		"opts.page":    opts.Page,
+		"opts.perpage": opts.PerPage,
+	})
+	ll.Info("debug")
 
 	edges := make([]*model.ProjectsEdge, *first)
 	count := 0
@@ -146,8 +162,6 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get projects: %w", err)
 	}
-	fmt.Printf("[Projects] resp: %+v\n", resp)
-	fmt.Printf("[Projects] projects: %+v\n", projects)
 
 	for _, p := range projects {
 		parsedUUID, err := uuid.Parse(p.OwnerUUID)
@@ -190,7 +204,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string)
 			return nil, fmt.Errorf("unable to get current page: %w", err)
 		}
 	}
-	fmt.Printf("[Projects] next page: %d\n", page)
+	ll.WithField("page", page).Info("next page")
 
 	mc := &model.ProjectsConnection{
 		Edges: edges[:count],

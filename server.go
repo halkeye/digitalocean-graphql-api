@@ -8,15 +8,18 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/digitalocean/godo"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/requestid"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
+	ginlogrus "github.com/toorop/gin-logrus"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph"
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
+	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 )
 
 // Defining the Graphql handler
@@ -52,9 +55,14 @@ func playgroundHandler() gin.HandlerFunc {
 }
 
 func main() {
-	// Setting up Gin
-	r := gin.Default()
+	log := logrus.New()
+	log.SetFormatter(&logrus.JSONFormatter{})
 
+	r := gin.New()
+	r.Use(ginlogrus.Logger(log), gin.Recovery())
+
+	r.Use(requestid.New(requestid.WithCustomHeaderStrKey("x-request-id")))
+	r.Use(LoggerMiddleware(log))
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"*"}
 	corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "authorization")
@@ -64,6 +72,13 @@ func main() {
 	r.POST("/query", DOContextToContextMiddleware(), graphqlHandler())
 	r.GET("/__graphql", playgroundHandler())
 	r.Run()
+}
+
+func LoggerMiddleware(log *logrus.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request = c.Request.WithContext(logger.WithContext(c.Request.Context(), logrus.NewEntry(log).WithField("requestid", requestid.Get(c))))
+		c.Next()
+	}
 }
 
 func LoadersMiddleware() gin.HandlerFunc {
@@ -79,8 +94,7 @@ func DOContextToContextMiddleware() gin.HandlerFunc {
 		if err != nil {
 			return
 		}
-		client := godo.NewFromToken(bearerToken)
-		ctx := digitalocean.WithContext(c.Request.Context(), client)
+		ctx := digitalocean.WithContext(c.Request.Context(), bearerToken)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

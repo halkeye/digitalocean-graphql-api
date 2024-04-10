@@ -139,7 +139,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Node     func(childComplexity int, id string) int
-		Projects func(childComplexity int, first *int, after *string) int
+		Projects func(childComplexity int, first *int, after *string, last *int, before *string) int
 	}
 
 	Region struct {
@@ -169,7 +169,7 @@ type ProjectResourceResolver interface {
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
-	Projects(ctx context.Context, first *int, after *string) (*model.ProjectsConnection, error)
+	Projects(ctx context.Context, first *int, after *string, last *int, before *string) (*model.ProjectsConnection, error)
 }
 
 type executableSchema struct {
@@ -575,7 +575,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Projects(childComplexity, args["first"].(*int), args["after"].(*string)), true
+		return e.complexity.Query.Projects(childComplexity, args["first"].(*int), args["after"].(*string), args["last"].(*int), args["before"].(*string)), true
 
 	case "Region.available":
 		if e.complexity.Region.Available == nil {
@@ -824,6 +824,24 @@ func (ec *executionContext) field_Query_projects_args(ctx context.Context, rawAr
 		}
 	}
 	args["after"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg3
 	return args, nil
 }
 
@@ -3227,7 +3245,7 @@ func (ec *executionContext) _Query_projects(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Projects(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string))
+		return ec.resolvers.Query().Projects(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string), fc.Args["last"].(*int), fc.Args["before"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

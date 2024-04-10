@@ -20,12 +20,13 @@ func For(ctx context.Context) (*godo.Client, error) {
 
 	do, ok := doClient.(*godo.Client)
 	if !ok {
-		err := fmt.Errorf("gin.Context has wrong type")
+		err := fmt.Errorf("godo.Client has wrong type")
 		return nil, err
 	}
 	return do, nil
 }
 
-func WithContext(ctx context.Context, client *godo.Client) context.Context {
+func WithContext(ctx context.Context, bearerToken string) context.Context {
+	client := godo.NewFromToken(bearerToken)
 	return context.WithValue(ctx, DOContextKey, client)
 }
