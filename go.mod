@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/99designs/gqlgen v0.17.45
 	github.com/cosmtrek/air v1.51.0
-	github.com/digitalocean/godo v1.112.0
+	github.com/digitalocean/godo v1.113.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-contrib/requestid v1.0.0
 	github.com/gin-contrib/static v1.1.1
