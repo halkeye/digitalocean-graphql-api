@@ -13,13 +13,11 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
-	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
-
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
+	"github.com/sirupsen/logrus"
 )
 
 // Resources is the resolver for the resources field.
@@ -31,7 +29,7 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 
 	ll, err := logger.For(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get do client: %w", err)
+		return nil, fmt.Errorf("unable to get logger: %w", err)
 	}
 
 	ll = ll.WithField("resolver", "Resources").WithField("parent.id", obj.ID)
@@ -102,7 +100,7 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.ProjectResource) (model.Resource, error) {
 	ll, err := logger.For(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get do client: %w", err)
+		return nil, fmt.Errorf("unable to get logger: %w", err)
 	}
 	ll = ll.WithField("resolver", "resolver").WithField("parent.id", obj.ID)
 	ll.Info("debug")
@@ -138,7 +136,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string,
 
 	ll, err := logger.For(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get do client: %w", err)
+		return nil, fmt.Errorf("unable to get logger: %w", err)
 	}
 	ll = ll.WithField("resolver", "projects")
 
@@ -178,35 +176,10 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string,
 	}
 
 	for _, p := range projects {
-		parsedUUID, err := uuid.Parse(p.OwnerUUID)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse uuid: %w", err)
-		}
-
-		createdAt, err := time.Parse(time.RFC3339, p.CreatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse created at: %w", err)
-		}
-
-		updatedAt, err := time.Parse(time.RFC3339, p.UpdatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse updated at: %w", err)
-		}
-
-		id := fmt.Sprintf("do:project:%s", p.ID)
+		node := model.ProjectFromGodo(&p)
 		edges[count] = &model.ProjectsEdge{
-			Cursor: base64.StdEncoding.EncodeToString([]byte(id)),
-			Node: &model.Project{
-				ID:          id,
-				Owner:       &model.Team{ID: fmt.Sprintf("do:team:%s", p.OwnerUUID), UUID: parsedUUID},
-				Name:        p.Name,
-				Description: &p.Description,
-				Purpose:     p.Purpose,
-				Environment: p.Environment,
-				IsDefault:   p.IsDefault,
-				CreatedAt:   &createdAt,
-				UpdatedAt:   &updatedAt,
-			},
+			Cursor: base64.StdEncoding.EncodeToString([]byte(node.ID)),
+			Node:   node,
 		}
 		count++
 	}

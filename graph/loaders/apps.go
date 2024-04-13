@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/digitalocean/godo"
-	"github.com/google/uuid"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
@@ -52,40 +51,42 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 		appIDMap[appID] = pos
 	}
 
-	// create options. initially, these will be blank
-	opts := &godo.ListOptions{}
-	for {
-		ll.WithField("opts", opts).Info("doClient.Apps.List")
-		clientApps, resp, err := doClient.Apps.List(ctx, opts)
+	if len(appIDs) == 1 {
+		clientApp, _, err := doClient.Apps.Get(ctx, appIDs[0])
 		if err != nil {
 			return nil, []error{fmt.Errorf("unable to get apps: %w", err)}
 		}
+		return []*model.App{model.AppFromGodo(clientApp)}, errs
+	} else {
+		// create options. initially, these will be blank
+		opts := &godo.ListOptions{}
+		for {
+			ll.WithField("opts", opts).Info("doClient.Apps.List")
+			// FIXME - call Get if its only a single one instead of list
+			clientApps, resp, err := doClient.Apps.List(ctx, opts)
+			if err != nil {
+				return nil, []error{fmt.Errorf("unable to get apps: %w", err)}
+			}
 
-		for _, app := range clientApps {
-			if pos, ok := appIDMap[app.ID]; ok {
-				delete(appIDMap, app.ID)
-				apps[pos] = &model.App{
-					ID:                     app.URN(),
-					Owner:                  &model.Team{UUID: uuid.MustParse(app.OwnerUUID)},
-					LastDeploymentActiveAt: &app.LastDeploymentActiveAt,
-					DefaultIngress:         &app.DefaultIngress,
-					CreatedAt:              &app.CreatedAt,
-					UpdatedAt:              &app.UpdatedAt,
+			for _, app := range clientApps {
+				if pos, ok := appIDMap[app.ID]; ok {
+					delete(appIDMap, app.ID)
+					apps[pos] = model.AppFromGodo(app)
 				}
 			}
-		}
-		// if we are at the last page, break out the for loop
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
+			// if we are at the last page, break out the for loop
+			if resp.Links == nil || resp.Links.IsLastPage() {
+				break
+			}
 
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
-		}
+			page, err := resp.Links.CurrentPage()
+			if err != nil {
+				return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
+			}
 
-		// set the page we want for the next request
-		opts.Page = page + 1
+			// set the page we want for the next request
+			opts.Page = page + 1
+		}
 	}
 
 	for id, pos := range appIDMap {
