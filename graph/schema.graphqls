@@ -65,3 +65,242 @@ scalar Time
 UUID
 """
 scalar UUID
+
+### Start of digitalocean schema specific stuff
+
+interface Resource {
+  id: ID!
+  name: String!
+}
+
+extend type Query {
+  """All projects"""
+  projects(
+    """Num after the after cursor"""
+    first: Int = 20,
+    """After Cursor"""
+    after: String
+    """Num before the before cursor"""
+    last: Int = 20,
+    """Before Cursor ID"""
+    before: String
+  ): ProjectsConnection
+
+  """Account Information"""
+  account: Account!
+}
+
+## Digital ocean stuff
+
+"""
+Account Limits
+"""
+type AccountLimits {
+  """
+  How many droplets can you have at once
+  """
+  dropletLimit: Int!
+  """
+  How many volumes can you have at once
+  """
+  volumeLimit: Int!
+}
+
+"""
+Team information
+"""
+type Team implements Node {
+  """The id of the team"""
+  id: ID!
+  """What is the teams limits"""
+  limits: AccountLimits
+  """
+  Team UUID
+  """
+  uuid: UUID!
+}
+
+"""
+Account Information
+"""
+type Account implements Node {
+  """Email address"""
+  email: String!
+  """Has email been verified"""
+  emailVerified: Boolean!
+  """The id of the account"""
+  id: ID!
+  """Account Status"""
+  status: String!
+  """Account UUID"""
+  uuid: String!
+  """Team"""
+  team: Team!
+}
+
+"""Projects Connection"""
+type ProjectsConnection {
+  """Edges"""
+  edges: [ProjectsEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""Project Edge"""
+type ProjectsEdge {
+  """Cursor"""
+  cursor: ID!
+  """Project Resource Node"""
+  node: Project
+}
+
+"""
+Projects allow you to organize your resources into groups that fit the way you work. You can group resources (like Droplets, Spaces, load balancers, domains, and floating IPs) in ways that align with the applications you host on DigitalOcean.
+"""
+type Project implements Node {
+    """The id of the account"""
+    id: ID!
+    owner: Team!
+    name: String!
+    description: String
+    purpose: String!
+    environment: String!
+    isDefault: Boolean!
+    createdAt: Time
+    updatedAt: Time
+    """Project Resources"""
+    resources(
+      """Page Size"""
+      first: Int = 20,
+      """Cursor ID"""
+      after: ID
+    ): ProjectResourcesConnection @goField(forceResolver: true)
+    """Project Activity"""
+    activityHistory(
+      """Page Size"""
+      first: Int = 20,
+      """Cursor ID"""
+      after: ID
+    ): ActivityHistoriesConnection @goField(forceResolver: true)
+}
+
+"""ProjectResources Connection"""
+type ProjectResourcesConnection {
+  """Edges"""
+  edges: [ProjectResourcesEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""ProjectResources Edge"""
+type ProjectResourcesEdge {
+  """Cursor"""
+  cursor: ID!
+  """Project Node"""
+  node: ProjectResource
+}
+
+type ProjectResource {
+  id: ID!
+  assignedAt: Time!
+  resource: Resource @goField(forceResolver: true)
+  status: String!
+}
+
+"""ActivityHistories Connection"""
+type ActivityHistoriesConnection {
+  """Edges"""
+  edges: [ActivityHistoriesEdge!]!
+  """Pagination info"""
+  pageInfo: PageInfo!
+}
+
+"""ActivityHistories Edge"""
+type ActivityHistoriesEdge {
+  """Cursor"""
+  cursor: ID!
+  """Project Node"""
+  node: ActivityHistory
+}
+
+type ActivityHistory {
+  id: ID!
+  action: String!
+  project: Project @goField(forceResolver: true)
+  resource: Resource @goField(forceResolver: true)
+  ipAddress: String!
+  eventTime: Time!
+  user: Account! @goField(forceResolver: true)
+}
+
+type Region implements Node {
+  id: ID!
+  name: String!
+  sizes: [String!]!
+  available: Boolean
+  features: [String!]!
+}
+
+type Droplet implements Node & Resource {
+  id: ID!
+  name: String!
+
+	memory: Int
+  vcpus: Int
+  disk: Int
+  region: Region
+  # image: Image
+  # size: Size
+  sizeSlug: String
+  backupIDs: [Int!]!
+	# NextBackupWindow *BackupWindow `json:"next_backup_window,omitempty"`
+	# SnapshotIDs      []int         `json:"snapshot_ids,omitempty"`
+	# Features         []string      `json:"features,omitempty"`
+	# Locked           bool          `json:"locked,bool,omitempty"`
+	# Status           string        `json:"status,omitempty"`
+	# Networks         *Networks     `json:"networks,omitempty"`
+	# Created          string        `json:"created_at,omitempty"`
+	# Kernel           *Kernel       `json:"kernel,omitempty"`
+	# Tags             []string      `json:"tags,omitempty"`
+	# VolumeIDs        []string      `json:"volume_ids"`
+	# VPCUUID          string        `json:"vpc_uuid,omitempty"`
+}
+
+type Domain implements Node & Resource {
+  id: ID!
+  name: String!
+  ttl: Int!
+	zoneFile: String
+}
+
+type Volume implements Node & Resource {
+  id: ID!
+  name: String!
+}
+
+type App implements Node & Resource {
+  id: ID!
+  name: String!
+  owner: Team!
+  # Spec
+  lastDeploymentActiveAt: Time
+  defaultIngress: String
+	createdAt: Time
+	updatedAt: Time
+	# ActiveDeployment        *Deployment     `json:"active_deployment,omitempty"`
+	# InProgressDeployment    *Deployment     `json:"in_progress_deployment,omitempty"`
+	# PendingDeployment       *Deployment     `json:"pending_deployment,omitempty"`
+	# LastDeploymentCreatedAt time.Time       `json:"last_deployment_created_at,omitempty"`
+	# LiveURL                 string          `json:"live_url,omitempty"`
+	# Region                  *AppRegion      `json:"region,omitempty"`
+	# TierSlug                string          `json:"tier_slug,omitempty"`
+	# LiveURLBase             string          `json:"live_url_base,omitempty"`
+	# LiveDomain              string          `json:"live_domain,omitempty"`
+	# Domains                 []*AppDomain    `json:"domains,omitempty"`
+	# PinnedDeployment        *Deployment     `json:"pinned_deployment,omitempty"`
+	# BuildConfig             *AppBuildConfig `json:"build_config,omitempty"`
+	# // The id of the project for the app. This will be empty if there is a fleet (project) lookup failure.
+	# ProjectID string `json:"project_id,omitempty"`
+	# // The dedicated egress ip addresses associated with the app.
+	# DedicatedIps []*AppDedicatedIp `json:"dedicated_ips,omitempty"`
+}

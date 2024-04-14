@@ -23,7 +23,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 
 	ll, err := logger.For(ctx)
 	if err != nil {
-		return nil, []error{fmt.Errorf("unable to get do client: %w", err)}
+		errs = append(errs, fmt.Errorf("unable to get logger: %w", err))
 	}
 	ll = ll.WithField("reader", "domain").WithField("method", "getDomains").WithField("domainsIDs", domainIDs)
 	ll.Info("debug")

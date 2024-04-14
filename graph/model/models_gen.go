@@ -4,8 +4,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // An object with an ID
@@ -17,6 +15,8 @@ type Node interface {
 
 type Resource interface {
 	IsResource()
+	GetID() string
+	GetName() string
 }
 
 // Account Information
@@ -31,6 +31,8 @@ type Account struct {
 	Status string `json:"status"`
 	// Account UUID
 	UUID string `json:"uuid"`
+	// Team
+	Team *Team `json:"team"`
 }
 
 func (Account) IsNode() {}
@@ -46,8 +48,35 @@ type AccountLimits struct {
 	VolumeLimit int `json:"volumeLimit"`
 }
 
+// ActivityHistories Connection
+type ActivityHistoriesConnection struct {
+	// Edges
+	Edges []*ActivityHistoriesEdge `json:"edges"`
+	// Pagination info
+	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+// ActivityHistories Edge
+type ActivityHistoriesEdge struct {
+	// Cursor
+	Cursor string `json:"cursor"`
+	// Project Node
+	Node *ActivityHistory `json:"node,omitempty"`
+}
+
+type ActivityHistory struct {
+	ID        string    `json:"id"`
+	Action    string    `json:"action"`
+	Project   *Project  `json:"project,omitempty"`
+	Resource  Resource  `json:"resource,omitempty"`
+	IPAddress string    `json:"ipAddress"`
+	EventTime time.Time `json:"eventTime"`
+	User      *Account  `json:"user"`
+}
+
 type App struct {
 	ID                     string     `json:"id"`
+	Name                   string     `json:"name"`
 	Owner                  *Team      `json:"owner"`
 	LastDeploymentActiveAt *time.Time `json:"lastDeploymentActiveAt,omitempty"`
 	DefaultIngress         *string    `json:"defaultIngress,omitempty"`
@@ -55,26 +84,30 @@ type App struct {
 	UpdatedAt              *time.Time `json:"updatedAt,omitempty"`
 }
 
-func (App) IsResource() {}
-
 func (App) IsNode() {}
 
 // The id of the object.
 func (this App) GetID() string { return this.ID }
 
+func (App) IsResource() {}
+
+func (this App) GetName() string { return this.Name }
+
 type Domain struct {
 	ID       string  `json:"id"`
 	Name     string  `json:"name"`
-	TTL      int     `json:"TTL"`
-	ZoneFile *string `json:"ZoneFile,omitempty"`
+	TTL      int     `json:"ttl"`
+	ZoneFile *string `json:"zoneFile,omitempty"`
 }
-
-func (Domain) IsResource() {}
 
 func (Domain) IsNode() {}
 
 // The id of the object.
 func (this Domain) GetID() string { return this.ID }
+
+func (Domain) IsResource() {}
+
+func (this Domain) GetName() string { return this.Name }
 
 type Droplet struct {
 	ID        string  `json:"id"`
@@ -87,12 +120,14 @@ type Droplet struct {
 	BackupIDs []int   `json:"backupIDs"`
 }
 
-func (Droplet) IsResource() {}
-
 func (Droplet) IsNode() {}
 
 // The id of the object.
 func (this Droplet) GetID() string { return this.ID }
+
+func (Droplet) IsResource() {}
+
+func (this Droplet) GetName() string { return this.Name }
 
 // Information about pagination in a connection.
 type PageInfo struct {
@@ -118,8 +153,10 @@ type Project struct {
 	IsDefault   bool       `json:"isDefault"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
-	// All projects
+	// Project Resources
 	Resources *ProjectResourcesConnection `json:"resources,omitempty"`
+	// Project Activity
+	ActivityHistory *ActivityHistoriesConnection `json:"activityHistory,omitempty"`
 }
 
 func (Project) IsNode() {}
@@ -190,7 +227,7 @@ type Team struct {
 	// What is the teams limits
 	Limits *AccountLimits `json:"limits,omitempty"`
 	// Team UUID
-	UUID uuid.UUID `json:"uuid"`
+	UUID string `json:"uuid"`
 }
 
 func (Team) IsNode() {}
@@ -199,12 +236,15 @@ func (Team) IsNode() {}
 func (this Team) GetID() string { return this.ID }
 
 type Volume struct {
-	ID string `json:"id"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
-
-func (Volume) IsResource() {}
 
 func (Volume) IsNode() {}
 
 // The id of the object.
 func (this Volume) GetID() string { return this.ID }
+
+func (Volume) IsResource() {}
+
+func (this Volume) GetName() string { return this.Name }

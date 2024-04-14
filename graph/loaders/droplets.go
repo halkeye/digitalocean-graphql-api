@@ -31,7 +31,7 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	// defer rows.Close()
 	ll, err := logger.For(ctx)
 	if err != nil {
-		return nil, []error{fmt.Errorf("unable to get do client: %w", err)}
+		return nil, []error{fmt.Errorf("unable to get logger: %w", err)}
 	}
 	ll = ll.WithField("reader", "droplet").WithField("method", "getDroplets").WithField("dropletIDs", dropletIDs)
 	ll.Info("debug")

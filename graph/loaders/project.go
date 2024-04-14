@@ -9,6 +9,7 @@ import (
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
 )
 
 // projectReader
@@ -23,7 +24,7 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 
 	ll, err := logger.For(ctx)
 	if err != nil {
-		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
+		errs = append(errs, fmt.Errorf("unable to get logger: %w", err))
 		return projects, errs
 	}
 	ll = ll.WithField("reader", "project").WithField("method", "getProjects").WithField("projectIDs", projectIDs)
@@ -56,7 +57,7 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 		if err != nil {
 			return nil, []error{fmt.Errorf("unable to get projects: %w", err)}
 		}
-		return []*model.Project{model.ProjectFromGodo(clientProject)}, errs
+		return []*model.Project{model_helpers.ProjectFromGodo(clientProject)}, errs
 	} else {
 		// create options. initially, these will be blank
 		opts := &godo.ListOptions{}
@@ -71,7 +72,7 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 			for _, project := range clientProjects {
 				if pos, ok := projectIDMap[project.ID]; ok {
 					delete(projectIDMap, project.ID)
-					projects[pos] = model.ProjectFromGodo(&project)
+					projects[pos] = model_helpers.ProjectFromGodo(&project)
 				}
 			}
 			// if we are at the last page, break out the for loop

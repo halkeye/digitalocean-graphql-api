@@ -9,6 +9,7 @@ import (
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
 )
 
 // appReader
@@ -23,7 +24,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 
 	ll, err := logger.For(ctx)
 	if err != nil {
-		errs = append(errs, fmt.Errorf("unable to get do client: %w", err))
+		errs = append(errs, fmt.Errorf("unable to get logger: %w", err))
 		return apps, errs
 	}
 	ll = ll.WithField("reader", "app").WithField("method", "getApps").WithField("appIDs", appIDs)
@@ -56,7 +57,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 		if err != nil {
 			return nil, []error{fmt.Errorf("unable to get apps: %w", err)}
 		}
-		return []*model.App{model.AppFromGodo(clientApp)}, errs
+		return []*model.App{model_helpers.AppFromGodo(clientApp)}, errs
 	} else {
 		// create options. initially, these will be blank
 		opts := &godo.ListOptions{}
@@ -71,7 +72,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 			for _, app := range clientApps {
 				if pos, ok := appIDMap[app.ID]; ok {
 					delete(appIDMap, app.ID)
-					apps[pos] = model.AppFromGodo(app)
+					apps[pos] = model_helpers.AppFromGodo(app)
 				}
 			}
 			// if we are at the last page, break out the for loop
