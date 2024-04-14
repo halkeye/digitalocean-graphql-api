@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
+	"github.com/google/uuid"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 )
@@ -12,7 +13,7 @@ import (
 func AppFromGodo(app *godo.App) *model.App {
 	return &model.App{
 		ID:                     app.URN(),
-		Owner:                  &model.Team{UUID: app.OwnerUUID},
+		Owner:                  &model.Team{UUID: uuid.MustParse(app.OwnerUUID)},
 		LastDeploymentActiveAt: &app.LastDeploymentActiveAt,
 		DefaultIngress:         &app.DefaultIngress,
 		CreatedAt:              &app.CreatedAt,
@@ -35,7 +36,7 @@ func ProjectFromGodo(project *godo.Project) *model.Project {
 
 	return &model.Project{
 		ID:          id,
-		Owner:       &model.Team{ID: fmt.Sprintf("do:team:%s", project.OwnerUUID), UUID: project.OwnerUUID},
+		Owner:       &model.Team{ID: fmt.Sprintf("do:team:%s", project.OwnerUUID), UUID: uuid.MustParse(project.OwnerUUID)},
 		Name:        project.Name,
 		Description: &project.Description,
 		Purpose:     project.Purpose,

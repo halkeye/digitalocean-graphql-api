@@ -81,5 +81,3 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/99designs/gqlgen => /home/halkeye/git/99designs/gqlgen

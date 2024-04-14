@@ -55,6 +55,7 @@ type ComplexityRoot struct {
 		EmailVerified func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Status        func(childComplexity int) int
+		Team          func(childComplexity int) int
 		UUID          func(childComplexity int) int
 	}
 
@@ -68,6 +69,7 @@ type ComplexityRoot struct {
 		DefaultIngress         func(childComplexity int) int
 		ID                     func(childComplexity int) int
 		LastDeploymentActiveAt func(childComplexity int) int
+		Name                   func(childComplexity int) int
 		Owner                  func(childComplexity int) int
 		UpdatedAt              func(childComplexity int) int
 	}
@@ -138,6 +140,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Account  func(childComplexity int) int
 		Node     func(childComplexity int, id string) int
 		Projects func(childComplexity int, first *int, after *string, last *int, before *string) int
 	}
@@ -157,7 +160,8 @@ type ComplexityRoot struct {
 	}
 
 	Volume struct {
-		ID func(childComplexity int) int
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 }
 
@@ -170,6 +174,7 @@ type ProjectResourceResolver interface {
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
 	Projects(ctx context.Context, first *int, after *string, last *int, before *string) (*model.ProjectsConnection, error)
+	Account(ctx context.Context) (*model.Account, error)
 }
 
 type executableSchema struct {
@@ -218,6 +223,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Account.Status(childComplexity), true
+
+	case "Account.team":
+		if e.complexity.Account.Team == nil {
+			break
+		}
+
+		return e.complexity.Account.Team(childComplexity), true
 
 	case "Account.uuid":
 		if e.complexity.Account.UUID == nil {
@@ -268,6 +280,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.App.LastDeploymentActiveAt(childComplexity), true
 
+	case "App.name":
+		if e.complexity.App.Name == nil {
+			break
+		}
+
+		return e.complexity.App.Name(childComplexity), true
+
 	case "App.owner":
 		if e.complexity.App.Owner == nil {
 			break
@@ -296,14 +315,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Domain.Name(childComplexity), true
 
-	case "Domain.TTL":
+	case "Domain.ttl":
 		if e.complexity.Domain.TTL == nil {
 			break
 		}
 
 		return e.complexity.Domain.TTL(childComplexity), true
 
-	case "Domain.ZoneFile":
+	case "Domain.zoneFile":
 		if e.complexity.Domain.ZoneFile == nil {
 			break
 		}
@@ -553,6 +572,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ProjectsEdge.Node(childComplexity), true
 
+	case "Query.account":
+		if e.complexity.Query.Account == nil {
+			break
+		}
+
+		return e.complexity.Query.Account(childComplexity), true
+
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
 			break
@@ -639,6 +665,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Volume.ID(childComplexity), true
+
+	case "Volume.name":
+		if e.complexity.Volume.Name == nil {
+			break
+		}
+
+		return e.complexity.Volume.Name(childComplexity), true
 
 	}
 	return 0, false
@@ -1102,6 +1135,58 @@ func (ec *executionContext) fieldContext_Account_uuid(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Account_team(ctx context.Context, field graphql.CollectedField, obj *model.Account) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Account_team(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Team, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Team)
+	fc.Result = res
+	return ec.marshalNTeam2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Account_team(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Account",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Team_id(ctx, field)
+			case "limits":
+				return ec.fieldContext_Team_limits(ctx, field)
+			case "uuid":
+				return ec.fieldContext_Team_uuid(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AccountLimits_dropletLimit(ctx context.Context, field graphql.CollectedField, obj *model.AccountLimits) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AccountLimits_dropletLimit(ctx, field)
 	if err != nil {
@@ -1229,6 +1314,50 @@ func (ec *executionContext) fieldContext_App_id(ctx context.Context, field graph
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _App_name(ctx context.Context, field graphql.CollectedField, obj *model.App) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_App_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_App_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "App",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1538,8 +1667,8 @@ func (ec *executionContext) fieldContext_Domain_name(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Domain_TTL(ctx context.Context, field graphql.CollectedField, obj *model.Domain) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Domain_TTL(ctx, field)
+func (ec *executionContext) _Domain_ttl(ctx context.Context, field graphql.CollectedField, obj *model.Domain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Domain_ttl(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1569,7 +1698,7 @@ func (ec *executionContext) _Domain_TTL(ctx context.Context, field graphql.Colle
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Domain_TTL(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Domain_ttl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Domain",
 		Field:      field,
@@ -1582,8 +1711,8 @@ func (ec *executionContext) fieldContext_Domain_TTL(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Domain_ZoneFile(ctx context.Context, field graphql.CollectedField, obj *model.Domain) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Domain_ZoneFile(ctx, field)
+func (ec *executionContext) _Domain_zoneFile(ctx context.Context, field graphql.CollectedField, obj *model.Domain) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Domain_zoneFile(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1610,7 +1739,7 @@ func (ec *executionContext) _Domain_ZoneFile(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Domain_ZoneFile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Domain_zoneFile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Domain",
 		Field:      field,
@@ -2718,7 +2847,7 @@ func (ec *executionContext) fieldContext_ProjectResource_resource(ctx context.Co
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Resource does not have child fields")
+			return nil, errors.New("FieldContext.Child cannot be called on type INTERFACE")
 		},
 	}
 	return fc, nil
@@ -3288,6 +3417,64 @@ func (ec *executionContext) fieldContext_Query_projects(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_account(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_account(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Account(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Account)
+	fc.Result = res
+	return ec.marshalNAccount2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_account(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "email":
+				return ec.fieldContext_Account_email(ctx, field)
+			case "emailVerified":
+				return ec.fieldContext_Account_emailVerified(ctx, field)
+			case "id":
+				return ec.fieldContext_Account_id(ctx, field)
+			case "status":
+				return ec.fieldContext_Account_status(ctx, field)
+			case "uuid":
+				return ec.fieldContext_Account_uuid(ctx, field)
+			case "team":
+				return ec.fieldContext_Account_team(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -3808,6 +3995,50 @@ func (ec *executionContext) fieldContext_Volume_id(ctx context.Context, field gr
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Volume_name(ctx context.Context, field graphql.CollectedField, obj *model.Volume) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Volume_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Volume_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Volume",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5594,6 +5825,34 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case model.Droplet:
+		return ec._Droplet(ctx, sel, &obj)
+	case *model.Droplet:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Droplet(ctx, sel, obj)
+	case model.Domain:
+		return ec._Domain(ctx, sel, &obj)
+	case *model.Domain:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Domain(ctx, sel, obj)
+	case model.Volume:
+		return ec._Volume(ctx, sel, &obj)
+	case *model.Volume:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Volume(ctx, sel, obj)
+	case model.App:
+		return ec._App(ctx, sel, &obj)
+	case *model.App:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._App(ctx, sel, obj)
 	case model.Team:
 		return ec._Team(ctx, sel, &obj)
 	case *model.Team:
@@ -5622,34 +5881,6 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Region(ctx, sel, obj)
-	case model.Droplet:
-		return ec._Droplet(ctx, sel, &obj)
-	case *model.Droplet:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Droplet(ctx, sel, obj)
-	case model.Domain:
-		return ec._Domain(ctx, sel, &obj)
-	case *model.Domain:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Domain(ctx, sel, obj)
-	case model.Volume:
-		return ec._Volume(ctx, sel, &obj)
-	case *model.Volume:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Volume(ctx, sel, obj)
-	case model.App:
-		return ec._App(ctx, sel, &obj)
-	case *model.App:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._App(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -5666,13 +5897,6 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			return graphql.Null
 		}
 		return ec._Droplet(ctx, sel, obj)
-	case model.App:
-		return ec._App(ctx, sel, &obj)
-	case *model.App:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._App(ctx, sel, obj)
 	case model.Domain:
 		return ec._Domain(ctx, sel, &obj)
 	case *model.Domain:
@@ -5687,6 +5911,13 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			return graphql.Null
 		}
 		return ec._Volume(ctx, sel, obj)
+	case model.App:
+		return ec._App(ctx, sel, &obj)
+	case *model.App:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._App(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -5729,6 +5960,11 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "uuid":
 			out.Values[i] = ec._Account_uuid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "team":
+			out.Values[i] = ec._Account_team(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5799,7 +6035,7 @@ func (ec *executionContext) _AccountLimits(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var appImplementors = []string{"App", "Resource", "Node"}
+var appImplementors = []string{"App", "Node", "Resource"}
 
 func (ec *executionContext) _App(ctx context.Context, sel ast.SelectionSet, obj *model.App) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, appImplementors)
@@ -5812,6 +6048,11 @@ func (ec *executionContext) _App(ctx context.Context, sel ast.SelectionSet, obj 
 			out.Values[i] = graphql.MarshalString("App")
 		case "id":
 			out.Values[i] = ec._App_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._App_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5851,7 +6092,7 @@ func (ec *executionContext) _App(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
-var domainImplementors = []string{"Domain", "Resource", "Node"}
+var domainImplementors = []string{"Domain", "Node", "Resource"}
 
 func (ec *executionContext) _Domain(ctx context.Context, sel ast.SelectionSet, obj *model.Domain) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, domainImplementors)
@@ -5872,13 +6113,13 @@ func (ec *executionContext) _Domain(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "TTL":
-			out.Values[i] = ec._Domain_TTL(ctx, field, obj)
+		case "ttl":
+			out.Values[i] = ec._Domain_ttl(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "ZoneFile":
-			out.Values[i] = ec._Domain_ZoneFile(ctx, field, obj)
+		case "zoneFile":
+			out.Values[i] = ec._Domain_zoneFile(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5902,7 +6143,7 @@ func (ec *executionContext) _Domain(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var dropletImplementors = []string{"Droplet", "Resource", "Node"}
+var dropletImplementors = []string{"Droplet", "Node", "Resource"}
 
 func (ec *executionContext) _Droplet(ctx context.Context, sel ast.SelectionSet, obj *model.Droplet) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, dropletImplementors)
@@ -6421,6 +6662,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "account":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_account(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -6554,7 +6817,7 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var volumeImplementors = []string{"Volume", "Resource", "Node"}
+var volumeImplementors = []string{"Volume", "Node", "Resource"}
 
 func (ec *executionContext) _Volume(ctx context.Context, sel ast.SelectionSet, obj *model.Volume) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, volumeImplementors)
@@ -6567,6 +6830,11 @@ func (ec *executionContext) _Volume(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = graphql.MarshalString("Volume")
 		case "id":
 			out.Values[i] = ec._Volume_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Volume_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6918,6 +7186,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAccount2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccount(ctx context.Context, sel ast.SelectionSet, v model.Account) graphql.Marshaler {
+	return ec._Account(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAccount2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccount(ctx context.Context, sel ast.SelectionSet, v *model.Account) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Account(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)

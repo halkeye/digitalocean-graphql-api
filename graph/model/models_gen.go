@@ -4,6 +4,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // An object with an ID
@@ -46,32 +48,6 @@ type AccountLimits struct {
 	DropletLimit int `json:"dropletLimit"`
 	// How many volumes can you have at once
 	VolumeLimit int `json:"volumeLimit"`
-}
-
-// ActivityHistories Connection
-type ActivityHistoriesConnection struct {
-	// Edges
-	Edges []*ActivityHistoriesEdge `json:"edges"`
-	// Pagination info
-	PageInfo *PageInfo `json:"pageInfo"`
-}
-
-// ActivityHistories Edge
-type ActivityHistoriesEdge struct {
-	// Cursor
-	Cursor string `json:"cursor"`
-	// Project Node
-	Node *ActivityHistory `json:"node,omitempty"`
-}
-
-type ActivityHistory struct {
-	ID        string    `json:"id"`
-	Action    string    `json:"action"`
-	Project   *Project  `json:"project,omitempty"`
-	Resource  Resource  `json:"resource,omitempty"`
-	IPAddress string    `json:"ipAddress"`
-	EventTime time.Time `json:"eventTime"`
-	User      *Account  `json:"user"`
 }
 
 type App struct {
@@ -155,8 +131,6 @@ type Project struct {
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 	// Project Resources
 	Resources *ProjectResourcesConnection `json:"resources,omitempty"`
-	// Project Activity
-	ActivityHistory *ActivityHistoriesConnection `json:"activityHistory,omitempty"`
 }
 
 func (Project) IsNode() {}
@@ -227,7 +201,7 @@ type Team struct {
 	// What is the teams limits
 	Limits *AccountLimits `json:"limits,omitempty"`
 	// Team UUID
-	UUID string `json:"uuid"`
+	UUID uuid.UUID `json:"uuid"`
 }
 
 func (Team) IsNode() {}

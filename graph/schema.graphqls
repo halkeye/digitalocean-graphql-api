@@ -175,13 +175,6 @@ type Project implements Node {
       """Cursor ID"""
       after: ID
     ): ProjectResourcesConnection @goField(forceResolver: true)
-    """Project Activity"""
-    activityHistory(
-      """Page Size"""
-      first: Int = 20,
-      """Cursor ID"""
-      after: ID
-    ): ActivityHistoriesConnection @goField(forceResolver: true)
 }
 
 """ProjectResources Connection"""
@@ -205,32 +198,6 @@ type ProjectResource {
   assignedAt: Time!
   resource: Resource @goField(forceResolver: true)
   status: String!
-}
-
-"""ActivityHistories Connection"""
-type ActivityHistoriesConnection {
-  """Edges"""
-  edges: [ActivityHistoriesEdge!]!
-  """Pagination info"""
-  pageInfo: PageInfo!
-}
-
-"""ActivityHistories Edge"""
-type ActivityHistoriesEdge {
-  """Cursor"""
-  cursor: ID!
-  """Project Node"""
-  node: ActivityHistory
-}
-
-type ActivityHistory {
-  id: ID!
-  action: String!
-  project: Project @goField(forceResolver: true)
-  resource: Resource @goField(forceResolver: true)
-  ipAddress: String!
-  eventTime: Time!
-  user: Account! @goField(forceResolver: true)
 }
 
 type Region implements Node {
