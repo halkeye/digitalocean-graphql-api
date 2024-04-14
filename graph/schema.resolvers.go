@@ -13,13 +13,12 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
-	"github.com/sirupsen/logrus"
-
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
+	"github.com/sirupsen/logrus"
 )
 
 // Resources is the resolver for the resources field.

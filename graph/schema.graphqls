@@ -243,6 +243,7 @@ type Domain implements Node & Resource {
 type Volume implements Node & Resource {
   id: ID!
   name: String!
+  description: String!
 }
 
 type App implements Node & Resource {

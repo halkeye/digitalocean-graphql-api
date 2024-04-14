@@ -40,7 +40,7 @@ func GetResource(ctx context.Context, ll *logrus.Entry, urn string) (model.Resou
 	case "app":
 		return loaders.GetApp(ctx, id)
 	case "volume":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - volume not implemented")
+		return loaders.GetVolume(ctx, id)
 	case "domain":
 		return loaders.GetDomain(ctx, id)
 	case "space":

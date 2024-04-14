@@ -211,8 +211,9 @@ func (Team) IsNode() {}
 func (this Team) GetID() string { return this.ID }
 
 type Volume struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 func (Volume) IsNode() {}

@@ -60,3 +60,13 @@ func AccountFromGodo(account *godo.Account) *model.Account {
 		UUID:          account.UUID,
 	}
 }
+
+func VolumeFromGodo(volume *godo.Volume) *model.Volume {
+	id := fmt.Sprintf("do:volume:%s", volume.ID)
+
+	return &model.Volume{
+		ID:          id,
+		Name:        volume.Name,
+		Description: volume.Description,
+	}
+}
