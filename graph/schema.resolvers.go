@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
+
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
-	"github.com/sirupsen/logrus"
 )
 
 // Resources is the resolver for the resources field.
@@ -68,11 +69,10 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 			return nil, fmt.Errorf("unable to parse assignedAt at: %w", err)
 		}
 
-		id := fmt.Sprintf("do:projectresource:%s", pr.URN)
 		edges[count] = &model.ProjectResourcesEdge{
-			Cursor: base64.StdEncoding.EncodeToString([]byte(id)),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(pr.URN)),
 			Node: &model.ProjectResource{
-				ID:         id,
+				ID:         pr.URN,
 				AssignedAt: assignedAt,
 				Status:     pr.Status,
 			},
@@ -105,21 +105,8 @@ func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.Proje
 	}
 	ll = ll.WithField("resolver", "resolver").WithField("parent.id", obj.ID)
 	ll.Info("debug")
-	parts := strings.Split(strings.Replace(obj.ID, "do:projectresource:do:", "", 1), ":")
-	switch parts[0] {
-	case "droplet":
-		return loaders.GetDroplet(ctx, parts[1])
-	case "app":
-		return loaders.GetApp(ctx, parts[1])
-	case "volume":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - volume not implemented")
-	case "domain":
-		return loaders.GetDomain(ctx, parts[1])
-	case "spaces":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - domain not implemented")
-	default:
-		panic(fmt.Errorf("not implemented: Resource - resource: %s for %s", parts[1], obj.ID))
-	}
+
+	return GetResource(ctx, ll, obj.ID)
 }
 
 // Node is the resolver for the node field.
@@ -131,31 +118,16 @@ func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error)
 	ll = ll.WithField("resolver", "query").WithField("id", id)
 	ll.Info("debug")
 
-	parts := strings.Split(id, ":")
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("not a valid do urn")
+	objtype, id, err := fromDoURN(id)
+	if err != nil {
+		return nil, err
 	}
 
-	if parts[0] != "do" {
-		return nil, fmt.Errorf("not a valid do urn: namespace")
+	if objtype == "project" {
+		return loaders.GetProject(ctx, id)
 	}
 
-	switch parts[1] {
-	case "project":
-		return loaders.GetProject(ctx, parts[2])
-	case "droplet":
-		return loaders.GetDroplet(ctx, parts[2])
-	case "app":
-		return loaders.GetApp(ctx, parts[2])
-	case "volume":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - volume not implemented")
-	case "domain":
-		return loaders.GetDomain(ctx, parts[2])
-	case "spaces":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - domain not implemented")
-	default:
-		return nil, fmt.Errorf("not a valid do urn: collection")
-	}
+	return GetResource(ctx, ll, id)
 }
 
 // Projects is the resolver for the projects field.

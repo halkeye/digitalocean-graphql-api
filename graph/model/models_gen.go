@@ -16,6 +16,7 @@ type Node interface {
 }
 
 type Resource interface {
+	IsNode()
 	IsResource()
 	GetID() string
 	GetName() string
@@ -56,7 +57,7 @@ type App struct {
 	Owner                  *Team      `json:"owner"`
 	LastDeploymentActiveAt *time.Time `json:"lastDeploymentActiveAt,omitempty"`
 	DefaultIngress         *string    `json:"defaultIngress,omitempty"`
-	CreatedAt              *time.Time `json:"createdAt,omitempty"`
+	CreatedAt              time.Time  `json:"createdAt"`
 	UpdatedAt              *time.Time `json:"updatedAt,omitempty"`
 }
 
@@ -121,13 +122,13 @@ type PageInfo struct {
 type Project struct {
 	// The id of the account
 	ID          string     `json:"id"`
-	Owner       *Team      `json:"owner"`
 	Name        string     `json:"name"`
+	Owner       *Team      `json:"owner"`
 	Description *string    `json:"description,omitempty"`
 	Purpose     string     `json:"purpose"`
 	Environment string     `json:"environment"`
 	IsDefault   bool       `json:"isDefault"`
-	CreatedAt   *time.Time `json:"createdAt,omitempty"`
+	CreatedAt   time.Time  `json:"createdAt"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 	// Project Resources
 	Resources *ProjectResourcesConnection `json:"resources,omitempty"`

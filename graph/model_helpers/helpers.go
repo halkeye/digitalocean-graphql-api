@@ -13,10 +13,11 @@ import (
 func AppFromGodo(app *godo.App) *model.App {
 	return &model.App{
 		ID:                     app.URN(),
+		Name:                   app.Spec.Name,
 		Owner:                  &model.Team{UUID: uuid.MustParse(app.OwnerUUID)},
 		LastDeploymentActiveAt: &app.LastDeploymentActiveAt,
 		DefaultIngress:         &app.DefaultIngress,
-		CreatedAt:              &app.CreatedAt,
+		CreatedAt:              app.CreatedAt,
 		UpdatedAt:              &app.UpdatedAt,
 	}
 }
@@ -42,7 +43,7 @@ func ProjectFromGodo(project *godo.Project) *model.Project {
 		Purpose:     project.Purpose,
 		Environment: project.Environment,
 		IsDefault:   project.IsDefault,
-		CreatedAt:   &createdAt,
+		CreatedAt:   createdAt,
 		UpdatedAt:   &updatedAt,
 	}
 }

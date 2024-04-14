@@ -68,7 +68,7 @@ scalar UUID
 
 ### Start of digitalocean schema specific stuff
 
-interface Resource {
+interface Resource implements Node {
   id: ID!
   name: String!
 }
@@ -160,13 +160,13 @@ Projects allow you to organize your resources into groups that fit the way you w
 type Project implements Node {
     """The id of the account"""
     id: ID!
-    owner: Team!
     name: String!
+    owner: Team!
     description: String
     purpose: String!
     environment: String!
     isDefault: Boolean!
-    createdAt: Time
+    createdAt: Time!
     updatedAt: Time
     """Project Resources"""
     resources(
@@ -252,7 +252,7 @@ type App implements Node & Resource {
   # Spec
   lastDeploymentActiveAt: Time
   defaultIngress: String
-	createdAt: Time
+	createdAt: Time!
 	updatedAt: Time
 	# ActiveDeployment        *Deployment     `json:"active_deployment,omitempty"`
 	# InProgressDeployment    *Deployment     `json:"in_progress_deployment,omitempty"`

@@ -40,6 +40,8 @@ func graphqlHandler() gin.HandlerFunc {
 		},
 	})
 
+	// TODO write complexity to log
+	// maybe set something in context?
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
