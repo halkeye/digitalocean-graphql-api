@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
+	"github.com/sirupsen/logrus"
+
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
-	"github.com/sirupsen/logrus"
 )
 
 // Resources is the resolver for the resources field.
@@ -68,10 +69,11 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 			return nil, fmt.Errorf("unable to parse assignedAt at: %w", err)
 		}
 
+		id := fmt.Sprintf(`do:projectresource:%s:%s`, obj.ID, pr.URN)
 		edges[count] = &model.ProjectResourcesEdge{
-			Cursor: base64.StdEncoding.EncodeToString([]byte(pr.URN)),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(id)),
 			Node: &model.ProjectResource{
-				ID:         pr.URN,
+				ID:         id,
 				AssignedAt: assignedAt,
 				Status:     pr.Status,
 			},
@@ -105,7 +107,14 @@ func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.Proje
 	ll = ll.WithField("resolver", "resolver").WithField("parent.id", obj.ID)
 	ll.Info("debug")
 
-	return GetResource(ctx, ll, obj.ID)
+	urn := obj.ID
+	if strings.HasPrefix(urn, "do:projectresource:") {
+		// get rid of do:projectresource:do:project:uuid
+		urn = strings.Join(strings.Split(urn, ":")[5:], ":")
+		ll.WithField("urn", urn).Info("new urn")
+	}
+
+	return GetResource(ctx, ll, urn)
 }
 
 // Node is the resolver for the node field.

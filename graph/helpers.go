@@ -18,11 +18,11 @@ func mustStringPtr(s string) *string {
 func fromDoURN(urn string) (string, string, error) {
 	parts := strings.Split(urn, ":")
 	if len(parts) != 3 {
-		return "", "", fmt.Errorf("not a valid do urn")
+		return "", "", fmt.Errorf("not a valid do urn: %s", urn)
 	}
 
 	if parts[0] != "do" {
-		return "", "", fmt.Errorf("not a valid do urn: namespace")
+		return "", "", fmt.Errorf("urn has unhandled namespace: %s", urn)
 	}
 
 	return parts[1], parts[2], nil
@@ -48,6 +48,6 @@ func GetResource(ctx context.Context, ll *logrus.Entry, urn string) (model.Resou
 	case "dbaas":
 		return nil, fmt.Errorf("projectResourceResolver.Resource - dbaas not implemented")
 	default:
-		return nil, fmt.Errorf("not a valid do urn: collection")
+		return nil, fmt.Errorf("no handler for %s", objtype)
 	}
 }
