@@ -142,7 +142,7 @@ func (this Project) GetID() string { return this.ID }
 type ProjectResource struct {
 	ID         string    `json:"id"`
 	AssignedAt time.Time `json:"assignedAt"`
-	Resource   Resource  `json:"resource,omitempty"`
+	Resource   Resource  `json:"resource"`
 	Status     string    `json:"status"`
 }
 

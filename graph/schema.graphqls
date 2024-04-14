@@ -196,7 +196,7 @@ type ProjectResourcesEdge {
 type ProjectResource {
   id: ID!
   assignedAt: Time!
-  resource: Resource @goField(forceResolver: true)
+  resource: Resource! @goField(forceResolver: true)
   status: String!
 }
 

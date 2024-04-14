@@ -2847,11 +2847,14 @@ func (ec *executionContext) _ProjectResource_resource(ctx context.Context, field
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(model.Resource)
 	fc.Result = res
-	return ec.marshalOResource2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐResource(ctx, field.Selections, res)
+	return ec.marshalNResource2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐResource(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ProjectResource_resource(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6453,6 +6456,9 @@ func (ec *executionContext) _ProjectResource(ctx context.Context, sel ast.Select
 					}
 				}()
 				res = ec._ProjectResource_resource(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -7470,6 +7476,16 @@ func (ec *executionContext) marshalNProjectsEdge2ᚖgithubᚗcomᚋhalkeyeᚋdig
 	return ec._ProjectsEdge(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNResource2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐResource(ctx context.Context, sel ast.SelectionSet, v model.Resource) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Resource(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7915,13 +7931,6 @@ func (ec *executionContext) marshalORegion2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloc
 		return graphql.Null
 	}
 	return ec._Region(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOResource2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐResource(ctx context.Context, sel ast.SelectionSet, v model.Resource) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Resource(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
