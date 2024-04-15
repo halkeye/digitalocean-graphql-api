@@ -272,3 +272,19 @@ type App implements Node & Resource {
 	# // The dedicated egress ip addresses associated with the app.
 	# DedicatedIps []*AppDedicatedIp `json:"dedicated_ips,omitempty"`
 }
+
+type Dbaas implements Node & Resource {
+  id: ID!
+  name: String!
+}
+
+type KubernetesCluster implements Node & Resource {
+  id: ID!
+  name: String!
+}
+
+"""Not actually implemented as it doesn't return from api"""
+type Space implements Node & Resource {
+  id: ID!
+  name: String!
+}

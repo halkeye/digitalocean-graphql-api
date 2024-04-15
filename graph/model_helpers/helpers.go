@@ -70,3 +70,33 @@ func VolumeFromGodo(volume *godo.Volume) *model.Volume {
 		Description: volume.Description,
 	}
 }
+
+func DropletFromGodo(droplet *godo.Droplet) *model.Droplet {
+	return &model.Droplet{
+		ID:     fmt.Sprintf("do:droplet:%d", droplet.ID),
+		Name:   droplet.Name,
+		Memory: &droplet.Memory,
+		Vcpus:  &droplet.Vcpus,
+		Disk:   &droplet.Disk,
+		Region: &model.Region{
+			ID:   droplet.Region.Slug,
+			Name: droplet.Region.Name,
+		},
+		SizeSlug:  &droplet.SizeSlug,
+		BackupIDs: droplet.BackupIDs,
+	}
+}
+
+func DbaasFromGodo(dbaas *godo.Database) *model.Dbaas {
+	return &model.Dbaas{
+		ID:   fmt.Sprintf("do:dbaas:%s", dbaas.ID),
+		Name: dbaas.Name,
+	}
+}
+
+func KubernetesClusterFromGodo(k8s *godo.KubernetesCluster) *model.KubernetesCluster {
+	return &model.KubernetesCluster{
+		ID:   fmt.Sprintf("do:kubernetes:%s", k8s.ID),
+		Name: k8s.Name,
+	}
+}

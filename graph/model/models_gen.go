@@ -70,6 +70,20 @@ func (App) IsResource() {}
 
 func (this App) GetName() string { return this.Name }
 
+type Dbaas struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (Dbaas) IsNode() {}
+
+// The id of the object.
+func (this Dbaas) GetID() string { return this.ID }
+
+func (Dbaas) IsResource() {}
+
+func (this Dbaas) GetName() string { return this.Name }
+
 type Domain struct {
 	ID       string  `json:"id"`
 	Name     string  `json:"name"`
@@ -105,6 +119,20 @@ func (this Droplet) GetID() string { return this.ID }
 func (Droplet) IsResource() {}
 
 func (this Droplet) GetName() string { return this.Name }
+
+type KubernetesCluster struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (KubernetesCluster) IsNode() {}
+
+// The id of the object.
+func (this KubernetesCluster) GetID() string { return this.ID }
+
+func (KubernetesCluster) IsResource() {}
+
+func (this KubernetesCluster) GetName() string { return this.Name }
 
 // Information about pagination in a connection.
 type PageInfo struct {
@@ -194,6 +222,21 @@ func (Region) IsNode() {}
 
 // The id of the object.
 func (this Region) GetID() string { return this.ID }
+
+// Not actually implemented as it doesn't return from api
+type Space struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (Space) IsNode() {}
+
+// The id of the object.
+func (this Space) GetID() string { return this.ID }
+
+func (Space) IsResource() {}
+
+func (this Space) GetName() string { return this.Name }
 
 // Team information
 type Team struct {

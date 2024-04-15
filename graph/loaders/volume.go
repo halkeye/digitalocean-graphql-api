@@ -91,7 +91,7 @@ func (u *volumeReader) getVolumes(ctx context.Context, volumeIDs []string) ([]*m
 	}
 
 	for id, pos := range appIDMap {
-		errs[pos] = fmt.Errorf("%s is not found", id)
+		errs[pos] = fmt.Errorf("volume %s is not found", id)
 	}
 
 	return volumes, errs

@@ -55,7 +55,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	if len(appIDs) == 1 {
 		clientApp, _, err := doClient.Apps.Get(ctx, appIDs[0])
 		if err != nil {
-			return nil, []error{fmt.Errorf("unable to get apps: %w", err)}
+			return nil, []error{fmt.Errorf("unable to get app: %w", err)}
 		}
 		return []*model.App{model_helpers.AppFromGodo(clientApp)}, errs
 	} else {
@@ -75,6 +75,12 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 					apps[pos] = model_helpers.AppFromGodo(app)
 				}
 			}
+
+			if len(appIDMap) == 0 {
+				// we got them all
+				break
+			}
+
 			// if we are at the last page, break out the for loop
 			if resp.Links == nil || resp.Links.IsLastPage() {
 				break
@@ -91,7 +97,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 	}
 
 	for id, pos := range appIDMap {
-		errs[pos] = fmt.Errorf("%s is not found", id)
+		errs[pos] = fmt.Errorf("app %s is not found", id)
 	}
 
 	return apps, errs

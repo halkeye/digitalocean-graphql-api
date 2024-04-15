@@ -70,6 +70,10 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 				}
 			}
 		}
+		if len(domainIDMap) == 0 {
+			// we got them all
+			break
+		}
 		// if we are at the last page, break out the for loop
 		if resp.Links == nil || resp.Links.IsLastPage() {
 			break
@@ -85,7 +89,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 	}
 
 	for id, pos := range domainIDMap {
-		errs[pos] = fmt.Errorf("%s is not found", id)
+		errs[pos] = fmt.Errorf("domain %s is not found", id)
 	}
 
 	return domains, errs

@@ -3,12 +3,14 @@ package loaders
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/digitalocean/godo"
 
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
+	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
 )
 
 // dropletReader
@@ -49,50 +51,55 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 	droplets := make([]*model.Droplet, len(dropletIDs))
 	errs := make([]error, len(dropletIDs))
 
-	// create options. initially, these will be blank
-	opts := &godo.ListOptions{}
-	for {
-		ll.WithField("opts", opts).Info("doClient.Droplets.List")
-		clientDroplets, resp, err := doClient.Droplets.List(ctx, opts)
+	if len(dropletIDs) == 1 {
+		id, err := strconv.Atoi(dropletIDs[0])
 		if err != nil {
-			return nil, []error{fmt.Errorf("unable to get droplets: %w", err)}
+			return nil, []error{fmt.Errorf("unable to convert id: %w", err)}
 		}
 
-		for _, droplet := range clientDroplets {
-			if pos, ok := dropletIDMap[fmt.Sprint(droplet.ID)]; ok {
-				delete(dropletIDMap, fmt.Sprint(droplet.ID))
-				errs[pos] = nil
-				droplets[pos] = &model.Droplet{
-					ID:     droplet.URN(),
-					Name:   droplet.Name,
-					Memory: &droplet.Memory,
-					Vcpus:  &droplet.Vcpus,
-					Disk:   &droplet.Disk,
-					Region: &model.Region{
-						ID:   droplet.Region.Slug,
-						Name: droplet.Region.Name,
-					},
-					SizeSlug:  &droplet.SizeSlug,
-					BackupIDs: droplet.BackupIDs,
+		droplet, _, err := doClient.Droplets.Get(ctx, id)
+		if err != nil {
+			return nil, []error{fmt.Errorf("unable to get droplet: %w", err)}
+		}
+		return []*model.Droplet{model_helpers.DropletFromGodo(droplet)}, errs
+	} else {
+		// create options. initially, these will be blank
+		opts := &godo.ListOptions{}
+		for {
+			ll.WithField("opts", opts).Info("doClient.Droplets.List")
+			clientDroplets, resp, err := doClient.Droplets.List(ctx, opts)
+			if err != nil {
+				return nil, []error{fmt.Errorf("unable to get droplets: %w", err)}
+			}
+
+			for _, droplet := range clientDroplets {
+				if pos, ok := dropletIDMap[fmt.Sprint(droplet.ID)]; ok {
+					delete(dropletIDMap, fmt.Sprint(droplet.ID))
+					errs[pos] = nil
+					droplets[pos] = model_helpers.DropletFromGodo(&droplet)
 				}
 			}
-		}
-		// if we are at the last page, break out the for loop
-		if resp.Links == nil || resp.Links.IsLastPage() {
-			break
-		}
+			if len(dropletIDMap) == 0 {
+				// we got them all
+				break
+			}
+			// if we are at the last page, break out the for loop
+			if resp.Links == nil || resp.Links.IsLastPage() {
+				break
+			}
 
-		page, err := resp.Links.CurrentPage()
-		if err != nil {
-			return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
-		}
+			page, err := resp.Links.CurrentPage()
+			if err != nil {
+				return nil, []error{fmt.Errorf("unable to get current page: %w", err)}
+			}
 
-		// set the page we want for the next request
-		opts.Page = page + 1
+			// set the page we want for the next request
+			opts.Page = page + 1
+		}
 	}
 
 	for id, pos := range dropletIDMap {
-		errs[pos] = fmt.Errorf("%s is not found", id)
+		errs[pos] = fmt.Errorf("droplet %s is not found", id)
 	}
 
 	return droplets, errs

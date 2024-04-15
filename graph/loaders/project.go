@@ -75,6 +75,12 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 					projects[pos] = model_helpers.ProjectFromGodo(&project)
 				}
 			}
+
+			if len(projectIDMap) == 0 {
+				// we got them all
+				break
+			}
+
 			// if we are at the last page, break out the for loop
 			if resp.Links == nil || resp.Links.IsLastPage() {
 				break
@@ -91,7 +97,7 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 	}
 
 	for id, pos := range projectIDMap {
-		errs[pos] = fmt.Errorf("%s is not found", id)
+		errs[pos] = fmt.Errorf("project %s is not found", id)
 	}
 
 	return projects, errs

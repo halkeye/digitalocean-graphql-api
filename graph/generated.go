@@ -74,6 +74,11 @@ type ComplexityRoot struct {
 		UpdatedAt              func(childComplexity int) int
 	}
 
+	Dbaas struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
 	Domain struct {
 		ID       func(childComplexity int) int
 		Name     func(childComplexity int) int
@@ -90,6 +95,11 @@ type ComplexityRoot struct {
 		Region    func(childComplexity int) int
 		SizeSlug  func(childComplexity int) int
 		Vcpus     func(childComplexity int) int
+	}
+
+	KubernetesCluster struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 
 	PageInfo struct {
@@ -151,6 +161,11 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
 		Sizes     func(childComplexity int) int
+	}
+
+	Space struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 
 	Team struct {
@@ -302,6 +317,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.App.UpdatedAt(childComplexity), true
 
+	case "Dbaas.id":
+		if e.complexity.Dbaas.ID == nil {
+			break
+		}
+
+		return e.complexity.Dbaas.ID(childComplexity), true
+
+	case "Dbaas.name":
+		if e.complexity.Dbaas.Name == nil {
+			break
+		}
+
+		return e.complexity.Dbaas.Name(childComplexity), true
+
 	case "Domain.id":
 		if e.complexity.Domain.ID == nil {
 			break
@@ -385,6 +414,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Droplet.Vcpus(childComplexity), true
+
+	case "KubernetesCluster.id":
+		if e.complexity.KubernetesCluster.ID == nil {
+			break
+		}
+
+		return e.complexity.KubernetesCluster.ID(childComplexity), true
+
+	case "KubernetesCluster.name":
+		if e.complexity.KubernetesCluster.Name == nil {
+			break
+		}
+
+		return e.complexity.KubernetesCluster.Name(childComplexity), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -638,6 +681,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Region.Sizes(childComplexity), true
+
+	case "Space.id":
+		if e.complexity.Space.ID == nil {
+			break
+		}
+
+		return e.complexity.Space.ID(childComplexity), true
+
+	case "Space.name":
+		if e.complexity.Space.Name == nil {
+			break
+		}
+
+		return e.complexity.Space.Name(childComplexity), true
 
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
@@ -1590,6 +1647,94 @@ func (ec *executionContext) fieldContext_App_updatedAt(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Dbaas_id(ctx context.Context, field graphql.CollectedField, obj *model.Dbaas) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dbaas_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dbaas_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dbaas",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dbaas_name(ctx context.Context, field graphql.CollectedField, obj *model.Dbaas) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dbaas_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dbaas_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dbaas",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Domain_id(ctx context.Context, field graphql.CollectedField, obj *model.Domain) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Domain_id(ctx, field)
 	if err != nil {
@@ -2107,6 +2252,94 @@ func (ec *executionContext) fieldContext_Droplet_backupIDs(ctx context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KubernetesCluster_id(ctx context.Context, field graphql.CollectedField, obj *model.KubernetesCluster) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KubernetesCluster_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KubernetesCluster_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KubernetesCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KubernetesCluster_name(ctx context.Context, field graphql.CollectedField, obj *model.KubernetesCluster) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KubernetesCluster_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KubernetesCluster_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KubernetesCluster",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3828,6 +4061,94 @@ func (ec *executionContext) _Region_features(ctx context.Context, field graphql.
 func (ec *executionContext) fieldContext_Region_features(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Region",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Space_id(ctx context.Context, field graphql.CollectedField, obj *model.Space) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Space_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Space_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Space",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Space_name(ctx context.Context, field graphql.CollectedField, obj *model.Space) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Space_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Space_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Space",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -5914,6 +6235,27 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._App(ctx, sel, obj)
+	case model.Dbaas:
+		return ec._Dbaas(ctx, sel, &obj)
+	case *model.Dbaas:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Dbaas(ctx, sel, obj)
+	case model.KubernetesCluster:
+		return ec._KubernetesCluster(ctx, sel, &obj)
+	case *model.KubernetesCluster:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._KubernetesCluster(ctx, sel, obj)
+	case model.Space:
+		return ec._Space(ctx, sel, &obj)
+	case *model.Space:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Space(ctx, sel, obj)
 	case model.Resource:
 		if obj == nil {
 			return graphql.Null
@@ -5984,6 +6326,27 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			return graphql.Null
 		}
 		return ec._App(ctx, sel, obj)
+	case model.Dbaas:
+		return ec._Dbaas(ctx, sel, &obj)
+	case *model.Dbaas:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Dbaas(ctx, sel, obj)
+	case model.KubernetesCluster:
+		return ec._KubernetesCluster(ctx, sel, &obj)
+	case *model.KubernetesCluster:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._KubernetesCluster(ctx, sel, obj)
+	case model.Space:
+		return ec._Space(ctx, sel, &obj)
+	case *model.Space:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Space(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -6161,6 +6524,50 @@ func (ec *executionContext) _App(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var dbaasImplementors = []string{"Dbaas", "Node", "Resource"}
+
+func (ec *executionContext) _Dbaas(ctx context.Context, sel ast.SelectionSet, obj *model.Dbaas) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dbaasImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Dbaas")
+		case "id":
+			out.Values[i] = ec._Dbaas_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Dbaas_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var domainImplementors = []string{"Domain", "Node", "Resource"}
 
 func (ec *executionContext) _Domain(ctx context.Context, sel ast.SelectionSet, obj *model.Domain) graphql.Marshaler {
@@ -6245,6 +6652,50 @@ func (ec *executionContext) _Droplet(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Droplet_sizeSlug(ctx, field, obj)
 		case "backupIDs":
 			out.Values[i] = ec._Droplet_backupIDs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var kubernetesClusterImplementors = []string{"KubernetesCluster", "Node", "Resource"}
+
+func (ec *executionContext) _KubernetesCluster(ctx context.Context, sel ast.SelectionSet, obj *model.KubernetesCluster) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, kubernetesClusterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KubernetesCluster")
+		case "id":
+			out.Values[i] = ec._KubernetesCluster_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._KubernetesCluster_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6820,6 +7271,50 @@ func (ec *executionContext) _Region(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Region_available(ctx, field, obj)
 		case "features":
 			out.Values[i] = ec._Region_features(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var spaceImplementors = []string{"Space", "Node", "Resource"}
+
+func (ec *executionContext) _Space(ctx context.Context, sel ast.SelectionSet, obj *model.Space) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, spaceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Space")
+		case "id":
+			out.Values[i] = ec._Space_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Space_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -44,9 +44,11 @@ func GetResource(ctx context.Context, ll *logrus.Entry, urn string) (model.Resou
 	case "domain":
 		return loaders.GetDomain(ctx, id)
 	case "space":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - space not implemented")
+		return model.Space{ID: urn, Name: urn}, nil //fmt.Errorf("projectResourceResolver.Resource - space not implemented")
 	case "dbaas":
-		return nil, fmt.Errorf("projectResourceResolver.Resource - dbaas not implemented")
+		return loaders.GetDbaas(ctx, id)
+	case "kubernetes":
+		return loaders.GetKubernetesCluster(ctx, id)
 	default:
 		return nil, fmt.Errorf("no handler for %s", objtype)
 	}
