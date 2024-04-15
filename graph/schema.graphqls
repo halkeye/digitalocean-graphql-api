@@ -84,7 +84,7 @@ extend type Query {
     last: Int = 20,
     """Before Cursor ID"""
     before: String
-  ): ProjectsConnection
+  ): ProjectsConnection!
 
   """Account Information"""
   account: Account!
@@ -151,7 +151,7 @@ type ProjectsEdge {
   """Cursor"""
   cursor: ID!
   """Project Resource Node"""
-  node: Project
+  node: Project!
 }
 
 """
@@ -174,7 +174,7 @@ type Project implements Node {
       first: Int = 20,
       """Cursor ID"""
       after: ID
-    ): ProjectResourcesConnection @goField(forceResolver: true)
+    ): ProjectResourcesConnection! @goField(forceResolver: true, omittable: false)
 }
 
 """ProjectResources Connection"""
@@ -190,13 +190,13 @@ type ProjectResourcesEdge {
   """Cursor"""
   cursor: ID!
   """Project Node"""
-  node: ProjectResource
+  node: ProjectResource!
 }
 
 type ProjectResource {
   id: ID!
   assignedAt: Time!
-  resource: Resource! @goField(forceResolver: true)
+  resource: Resource! @goField(forceResolver: true, omittable: false)
   status: String!
 }
 

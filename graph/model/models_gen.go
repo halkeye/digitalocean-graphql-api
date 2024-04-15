@@ -159,7 +159,7 @@ type Project struct {
 	CreatedAt   time.Time  `json:"createdAt"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 	// Project Resources
-	Resources *ProjectResourcesConnection `json:"resources,omitempty"`
+	Resources *ProjectResourcesConnection `json:"resources"`
 }
 
 func (Project) IsNode() {}
@@ -187,7 +187,7 @@ type ProjectResourcesEdge struct {
 	// Cursor
 	Cursor string `json:"cursor"`
 	// Project Node
-	Node *ProjectResource `json:"node,omitempty"`
+	Node *ProjectResource `json:"node"`
 }
 
 // Projects Connection
@@ -203,7 +203,7 @@ type ProjectsEdge struct {
 	// Cursor
 	Cursor string `json:"cursor"`
 	// Project Resource Node
-	Node *Project `json:"node,omitempty"`
+	Node *Project `json:"node"`
 }
 
 // All the queries
