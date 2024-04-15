@@ -35,7 +35,7 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 	}
 
 	ll = ll.WithField("resolver", "Resources").WithField("parent.id", obj.ID)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	opts := &godo.ListOptions{
 		Page:    1,
@@ -105,7 +105,7 @@ func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.Proje
 		return nil, fmt.Errorf("unable to get logger: %w", err)
 	}
 	ll = ll.WithField("resolver", "resolver").WithField("parent.id", obj.ID)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	urn := obj.ID
 	if strings.HasPrefix(urn, "do:projectresource:") {
@@ -124,7 +124,7 @@ func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error)
 		return nil, fmt.Errorf("unable to get do client: %w", err)
 	}
 	ll = ll.WithField("resolver", "query").WithField("id", id)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	objtype, id, err := fromDoURN(id)
 	if err != nil {
@@ -182,7 +182,7 @@ func (r *queryResolver) Projects(ctx context.Context, first *int, after *string,
 		"opts.page":    opts.Page,
 		"opts.perpage": opts.PerPage,
 	})
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	edges := make([]*model.ProjectsEdge, *first)
 	count := 0

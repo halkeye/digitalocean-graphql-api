@@ -28,7 +28,7 @@ func (u *appReader) getApps(ctx context.Context, appIDs []string) ([]*model.App,
 		return apps, errs
 	}
 	ll = ll.WithField("reader", "app").WithField("method", "getApps").WithField("appIDs", appIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM apps WHERE id IN (?`+strings.Repeat(",?", len(appIDs)-1)+`)`)
 	// if err != nil {

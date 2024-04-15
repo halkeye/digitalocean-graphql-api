@@ -35,7 +35,7 @@ func (u *dbaasReader) getDbaass(ctx context.Context, dbaasIDs []string) ([]*mode
 		return nil, []error{fmt.Errorf("unable to get logger: %w", err)}
 	}
 	ll = ll.WithField("reader", "dbaas").WithField("method", "getDbaass").WithField("dbaasIDs", dbaasIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {
@@ -98,6 +98,7 @@ func (u *dbaasReader) getDbaass(ctx context.Context, dbaasIDs []string) ([]*mode
 
 	for id, pos := range dbaasIDMap {
 		errs[pos] = fmt.Errorf("dbaas %s is not found", id)
+		ll.WithError(errs[pos]).Info("dbaas not found")
 	}
 
 	return dbaass, errs

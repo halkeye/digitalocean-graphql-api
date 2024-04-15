@@ -24,7 +24,7 @@ func (u *kubernetesReader) getKubernetesClusters(ctx context.Context, kubernetes
 		return nil, []error{fmt.Errorf("unable to get logger: %w", err)}
 	}
 	ll = ll.WithField("reader", "kubernetes").WithField("method", "getKubernetesClusters").WithField("kubernetesClusterIDs", kubernetesClusterIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {

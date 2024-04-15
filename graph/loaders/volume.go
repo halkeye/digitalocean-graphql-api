@@ -28,7 +28,7 @@ func (u *volumeReader) getVolumes(ctx context.Context, volumeIDs []string) ([]*m
 		return volumes, errs
 	}
 	ll = ll.WithField("reader", "app").WithField("method", "getVolumes").WithField("volumeIDs", volumeIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM volumes WHERE id IN (?`+strings.Repeat(",?", len(volumeIDs)-1)+`)`)
 	// if err != nil {

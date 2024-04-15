@@ -36,7 +36,7 @@ func (u *dropletReader) getDroplets(ctx context.Context, dropletIDs []string) ([
 		return nil, []error{fmt.Errorf("unable to get logger: %w", err)}
 	}
 	ll = ll.WithField("reader", "droplet").WithField("method", "getDroplets").WithField("dropletIDs", dropletIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	doClient, err := digitalocean.For(ctx)
 	if err != nil {

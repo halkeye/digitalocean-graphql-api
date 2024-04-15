@@ -26,7 +26,7 @@ func (u *domainReader) getDomains(ctx context.Context, domainIDs []string) ([]*m
 		errs = append(errs, fmt.Errorf("unable to get logger: %w", err))
 	}
 	ll = ll.WithField("reader", "domain").WithField("method", "getDomains").WithField("domainsIDs", domainIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM domains WHERE id IN (?`+strings.Repeat(",?", len(domainIDs)-1)+`)`)
 	// if err != nil {

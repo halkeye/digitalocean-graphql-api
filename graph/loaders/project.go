@@ -28,7 +28,7 @@ func (u *projectReader) getProjects(ctx context.Context, projectIDs []string) ([
 		return projects, errs
 	}
 	ll = ll.WithField("reader", "project").WithField("method", "getProjects").WithField("projectIDs", projectIDs)
-	ll.Info("debug")
+	ll.Debug("debug")
 
 	// stmt, err := u.db.PrepareContext(ctx, `SELECT id, name FROM projects WHERE id IN (?`+strings.Repeat(",?", len(projectIDs)-1)+`)`)
 	// if err != nil {
