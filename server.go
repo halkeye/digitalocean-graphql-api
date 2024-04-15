@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -58,7 +59,19 @@ func playgroundHandler() gin.HandlerFunc {
 
 func main() {
 	log := logrus.New()
-	log.SetFormatter(&logrus.JSONFormatter{})
+	formatter, _ := os.LookupEnv("LOG_FORMATTER")
+	if formatter == "json" {
+		log.SetFormatter(&logrus.JSONFormatter{})
+	}
+	lvl, ok := os.LookupEnv("LOG_LEVEL")
+	if !ok {
+		lvl = "debug"
+	}
+	ll, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		panic(err)
+	}
+	logrus.SetLevel(ll)
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(log), gin.Recovery())
