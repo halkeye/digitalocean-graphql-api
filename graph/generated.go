@@ -3178,7 +3178,7 @@ func (ec *executionContext) _ProjectResourcesConnection_edges(ctx context.Contex
 	}
 	res := resTmp.([]*model.ProjectResourcesEdge)
 	fc.Result = res
-	return ec.marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ProjectResourcesConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7921,7 +7921,7 @@ func (ec *executionContext) marshalNProjectResourcesConnection2ᚖgithubᚗcom�
 	return ec._ProjectResourcesConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ProjectResourcesEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx context.Context, sel ast.SelectionSet, v []*model.ProjectResourcesEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -7945,7 +7945,7 @@ func (ec *executionContext) marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋha
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNProjectResourcesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOProjectResourcesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7956,23 +7956,7 @@ func (ec *executionContext) marshalNProjectResourcesEdge2ᚕᚖgithubᚗcomᚋha
 	}
 	wg.Wait()
 
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
 	return ret
-}
-
-func (ec *executionContext) marshalNProjectResourcesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx context.Context, sel ast.SelectionSet, v *model.ProjectResourcesEdge) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._ProjectResourcesEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNProjectsConnection2githubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectsConnection(ctx context.Context, sel ast.SelectionSet, v model.ProjectsConnection) graphql.Marshaler {
@@ -8463,6 +8447,13 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋhalkeyeᚋdigitalocean�
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOProjectResourcesEdge2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐProjectResourcesEdge(ctx context.Context, sel ast.SelectionSet, v *model.ProjectResourcesEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ProjectResourcesEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalORegion2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐRegion(ctx context.Context, sel ast.SelectionSet, v *model.Region) graphql.Marshaler {
