@@ -49,6 +49,8 @@ func GetResource(ctx context.Context, ll *logrus.Entry, urn string) (model.Resou
 		return loaders.GetDbaas(ctx, id)
 	case "kubernetes":
 		return loaders.GetKubernetesCluster(ctx, id)
+	case "loadbalancer":
+		return loaders.GetLoadBalancer(ctx, id)
 	default:
 		return nil, fmt.Errorf("no handler for %s", objtype)
 	}

@@ -134,6 +134,20 @@ func (KubernetesCluster) IsResource() {}
 
 func (this KubernetesCluster) GetName() string { return this.Name }
 
+type LoadBalancer struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (LoadBalancer) IsNode() {}
+
+// The id of the object.
+func (this LoadBalancer) GetID() string { return this.ID }
+
+func (LoadBalancer) IsResource() {}
+
+func (this LoadBalancer) GetName() string { return this.Name }
+
 // Information about pagination in a connection.
 type PageInfo struct {
 	// When paginating forwards, the cursor to continue.

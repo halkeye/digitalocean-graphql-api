@@ -288,3 +288,8 @@ type Space implements Node & Resource {
   id: ID!
   name: String!
 }
+
+type LoadBalancer implements Node & Resource {
+  id: ID!
+  name: String!
+}

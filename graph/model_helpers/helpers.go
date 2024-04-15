@@ -100,3 +100,10 @@ func KubernetesClusterFromGodo(k8s *godo.KubernetesCluster) *model.KubernetesClu
 		Name: k8s.Name,
 	}
 }
+
+func LoadBalancerFromGodo(lb *godo.LoadBalancer) *model.LoadBalancer {
+	return &model.LoadBalancer{
+		ID:   fmt.Sprintf("do:loadbalancer:%s", lb.ID),
+		Name: lb.Name,
+	}
+}
