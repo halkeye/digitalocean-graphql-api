@@ -74,8 +74,6 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgryski/trifles v0.0.0-20200323201526-dd97f9abfb48 h1:fRzb/w+pyskVMQ+UbP35JkH8yB7MYb4q/qhBarqZE6g=
 github.com/dgryski/trifles v0.0.0-20200323201526-dd97f9abfb48/go.mod h1:if7Fbed8SFyPtHLHbg49SI7NAdJiC5WIA09pe59rfAA=
-github.com/digitalocean/godo v1.112.0 h1:UwtcgoSa3YpnYyaDAk188VbScRRGtrBiFqoMdadyMbI=
-github.com/digitalocean/godo v1.112.0/go.mod h1:Z2mTP848Vi3IXXl5YbPekUgr4j4tOePomA+OE1Ag98w=
 github.com/digitalocean/godo v1.113.0 h1:CLtCxlP4wDAjKIQ+Hshht/UNbgAp8/J/XBH1ZtDCF9Y=
 github.com/digitalocean/godo v1.113.0/go.mod h1:Z2mTP848Vi3IXXl5YbPekUgr4j4tOePomA+OE1Ag98w=
 github.com/disintegration/gift v1.2.1 h1:Y005a1X4Z7Uc+0gLpSAsKhWi4qLtsdEcMIbbdvdZ6pc=
