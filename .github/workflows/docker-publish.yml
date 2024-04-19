@@ -112,7 +112,7 @@ jobs:
                 "registry_type": "GHCR",
                 "registry": "halkeye",
                 "repository": "digitalocean-graphql-api",
-                "tag": "${{needs.build.outputs.imageid}}"
+                "digest": "${{needs.build.outputs.imageid}}"
               }
             }]
 
