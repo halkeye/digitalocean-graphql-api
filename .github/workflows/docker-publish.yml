@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: DigitalOcean App Platform deployment
-        uses: digitalocean/app_action@v1.1.15
+        uses: digitalocean/app_action@v1.1.6
         with:
           app_name: halkeye-do-api-graphql
           token: ${{ secrets.DIGITALOCEAN_APPS_TOKEN }}
