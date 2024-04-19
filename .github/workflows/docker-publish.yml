@@ -24,8 +24,9 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    outputs:
+      imageid: ${{ steps.build-and-push.outputs.imageid }}
     permissions:
       contents: read
       packages: write
@@ -94,3 +95,25 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+  deploy:
+    needs:
+        - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: DigitalOcean App Platform deployment
+        uses: digitalocean/app_action@v1.1.15
+        with:
+          app_name: halkeye-do-api-graphql
+          token: ${{ secrets.DIGITALOCEAN_APPS_TOKEN }}
+          images: |
+            [{
+              "name": "halkeye-digitalocean-graphql-api",
+              "image":{ 
+                "registry_type": "GHCR",
+                "registry": "halkeye"
+                "repository": "digitalocean-graphql-api",
+                "tag": "${{needs.build.outputs.imageid}}"
+              },
+            }]
+
+          
