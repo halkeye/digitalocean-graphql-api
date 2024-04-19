@@ -113,7 +113,7 @@ jobs:
                 "registry": "halkeye",
                 "repository": "digitalocean-graphql-api",
                 "tag": "${{needs.build.outputs.imageid}}"
-              },
+              }
             }]
 
           
