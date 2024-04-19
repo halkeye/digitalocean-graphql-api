@@ -93,31 +93,15 @@ extend type Query {
 ## Digital ocean stuff
 
 """
-Account Limits
-"""
-type AccountLimits {
-  """
-  How many droplets can you have at once
-  """
-  dropletLimit: Int!
-  """
-  How many volumes can you have at once
-  """
-  volumeLimit: Int!
-}
-
-"""
 Team information
 """
 type Team implements Node {
   """The id of the team"""
   id: ID!
-  """What is the teams limits"""
-  limits: AccountLimits
-  """
-  Team UUID
-  """
+  """Team UUID"""
   uuid: UUID!
+  """Team Name"""
+  name: String!
 }
 
 """

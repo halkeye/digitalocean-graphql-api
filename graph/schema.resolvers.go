@@ -13,13 +13,12 @@ import (
 	"time"
 
 	"github.com/digitalocean/godo"
-	"github.com/sirupsen/logrus"
-
 	"github.com/halkeye/digitalocean-graphql-api/graph/digitalocean"
 	"github.com/halkeye/digitalocean-graphql-api/graph/loaders"
 	"github.com/halkeye/digitalocean-graphql-api/graph/logger"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model"
 	"github.com/halkeye/digitalocean-graphql-api/graph/model_helpers"
+	"github.com/sirupsen/logrus"
 )
 
 // Resources is the resolver for the resources field.
@@ -34,8 +33,8 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 		return nil, fmt.Errorf("unable to get logger: %w", err)
 	}
 
-	ll = ll.WithField("resolver", "Resources").WithField("parent.id", obj.ID)
-	ll.Debug("debug")
+	ll = ll.WithField("resolver", "Resources").WithField("parent.id", obj.ID).WithField("first", *first)
+	ll.Info("debug")
 
 	opts := &godo.ListOptions{
 		Page:    1,
@@ -53,6 +52,7 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 		}
 	}
 
+	// FIXME - cap first
 	edges := make([]*model.ProjectResourcesEdge, *first)
 	count := 0
 
@@ -62,6 +62,8 @@ func (r *projectResolver) Resources(ctx context.Context, obj *model.Project, fir
 	if err != nil {
 		return nil, fmt.Errorf("unable to get projects: %w", err)
 	}
+
+	ll.WithField("projectResources.length", len(projectResources)).Info("length")
 
 	for _, pr := range projectResources {
 		assignedAt, err := time.Parse(time.RFC3339, pr.AssignedAt)
@@ -111,7 +113,6 @@ func (r *projectResourceResolver) Resource(ctx context.Context, obj *model.Proje
 	if strings.HasPrefix(urn, "do:projectresource:") {
 		// get rid of do:projectresource:do:project:uuid
 		urn = strings.Join(strings.Split(urn, ":")[5:], ":")
-		ll.WithField("urn", urn).Info("new urn")
 	}
 
 	return GetResource(ctx, ll, urn)
@@ -245,7 +246,7 @@ func (r *queryResolver) Account(ctx context.Context) (*model.Account, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to get accounts: %w", err)
 	}
-	return model_helpers.AccountFromGodo(clientAccount), nil
+	return model_helpers.AccountFromGodo(clientAccount)
 }
 
 // Project returns ProjectResolver implementation.

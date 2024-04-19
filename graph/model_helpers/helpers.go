@@ -48,17 +48,24 @@ func ProjectFromGodo(project *godo.Project) *model.Project {
 	}
 }
 
-func AccountFromGodo(account *godo.Account) *model.Account {
+func AccountFromGodo(account *godo.Account) (*model.Account, error) {
 	id := fmt.Sprintf("do:user:%s", account.UUID)
+	uuidObj, err := uuid.Parse(account.Team.UUID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse updated at: %w", err)
+	}
 
 	return &model.Account{
-		ID: id,
-
+		ID:            id,
 		Email:         account.Email,
 		EmailVerified: account.EmailVerified,
 		Status:        account.Status,
 		UUID:          account.UUID,
-	}
+		Team: &model.Team{
+			UUID: uuidObj,
+			Name: account.Team.Name,
+		},
+	}, nil
 }
 
 func VolumeFromGodo(volume *godo.Volume) *model.Volume {

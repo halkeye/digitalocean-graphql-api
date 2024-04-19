@@ -43,14 +43,6 @@ func (Account) IsNode() {}
 // The id of the object.
 func (this Account) GetID() string { return this.ID }
 
-// Account Limits
-type AccountLimits struct {
-	// How many droplets can you have at once
-	DropletLimit int `json:"dropletLimit"`
-	// How many volumes can you have at once
-	VolumeLimit int `json:"volumeLimit"`
-}
-
 type App struct {
 	ID                     string     `json:"id"`
 	Name                   string     `json:"name"`
@@ -256,10 +248,10 @@ func (this Space) GetName() string { return this.Name }
 type Team struct {
 	// The id of the team
 	ID string `json:"id"`
-	// What is the teams limits
-	Limits *AccountLimits `json:"limits,omitempty"`
 	// Team UUID
 	UUID uuid.UUID `json:"uuid"`
+	// Team Name
+	Name string `json:"name"`
 }
 
 func (Team) IsNode() {}

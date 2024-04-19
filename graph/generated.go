@@ -59,11 +59,6 @@ type ComplexityRoot struct {
 		UUID          func(childComplexity int) int
 	}
 
-	AccountLimits struct {
-		DropletLimit func(childComplexity int) int
-		VolumeLimit  func(childComplexity int) int
-	}
-
 	App struct {
 		CreatedAt              func(childComplexity int) int
 		DefaultIngress         func(childComplexity int) int
@@ -98,6 +93,11 @@ type ComplexityRoot struct {
 	}
 
 	KubernetesCluster struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+	}
+
+	LoadBalancer struct {
 		ID   func(childComplexity int) int
 		Name func(childComplexity int) int
 	}
@@ -169,9 +169,9 @@ type ComplexityRoot struct {
 	}
 
 	Team struct {
-		ID     func(childComplexity int) int
-		Limits func(childComplexity int) int
-		UUID   func(childComplexity int) int
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+		UUID func(childComplexity int) int
 	}
 
 	Volume struct {
@@ -253,20 +253,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Account.UUID(childComplexity), true
-
-	case "AccountLimits.dropletLimit":
-		if e.complexity.AccountLimits.DropletLimit == nil {
-			break
-		}
-
-		return e.complexity.AccountLimits.DropletLimit(childComplexity), true
-
-	case "AccountLimits.volumeLimit":
-		if e.complexity.AccountLimits.VolumeLimit == nil {
-			break
-		}
-
-		return e.complexity.AccountLimits.VolumeLimit(childComplexity), true
 
 	case "App.createdAt":
 		if e.complexity.App.CreatedAt == nil {
@@ -428,6 +414,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.KubernetesCluster.Name(childComplexity), true
+
+	case "LoadBalancer.id":
+		if e.complexity.LoadBalancer.ID == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancer.ID(childComplexity), true
+
+	case "LoadBalancer.name":
+		if e.complexity.LoadBalancer.Name == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancer.Name(childComplexity), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -703,12 +703,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Team.ID(childComplexity), true
 
-	case "Team.limits":
-		if e.complexity.Team.Limits == nil {
+	case "Team.name":
+		if e.complexity.Team.Name == nil {
 			break
 		}
 
-		return e.complexity.Team.Limits(childComplexity), true
+		return e.complexity.Team.Name(childComplexity), true
 
 	case "Team.uuid":
 		if e.complexity.Team.UUID == nil {
@@ -1241,100 +1241,12 @@ func (ec *executionContext) fieldContext_Account_team(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Team_id(ctx, field)
-			case "limits":
-				return ec.fieldContext_Team_limits(ctx, field)
 			case "uuid":
 				return ec.fieldContext_Team_uuid(ctx, field)
+			case "name":
+				return ec.fieldContext_Team_name(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AccountLimits_dropletLimit(ctx context.Context, field graphql.CollectedField, obj *model.AccountLimits) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AccountLimits_dropletLimit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DropletLimit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AccountLimits_dropletLimit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AccountLimits",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AccountLimits_volumeLimit(ctx context.Context, field graphql.CollectedField, obj *model.AccountLimits) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AccountLimits_volumeLimit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VolumeLimit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AccountLimits_volumeLimit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AccountLimits",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1469,10 +1381,10 @@ func (ec *executionContext) fieldContext_App_owner(ctx context.Context, field gr
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Team_id(ctx, field)
-			case "limits":
-				return ec.fieldContext_Team_limits(ctx, field)
 			case "uuid":
 				return ec.fieldContext_Team_uuid(ctx, field)
+			case "name":
+				return ec.fieldContext_Team_name(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -2345,6 +2257,94 @@ func (ec *executionContext) fieldContext_KubernetesCluster_name(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _LoadBalancer_id(ctx context.Context, field graphql.CollectedField, obj *model.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancer_name(ctx context.Context, field graphql.CollectedField, obj *model.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_endCursor(ctx, field)
 	if err != nil {
@@ -2644,10 +2644,10 @@ func (ec *executionContext) fieldContext_Project_owner(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Team_id(ctx, field)
-			case "limits":
-				return ec.fieldContext_Team_limits(ctx, field)
 			case "uuid":
 				return ec.fieldContext_Team_uuid(ctx, field)
+			case "name":
+				return ec.fieldContext_Team_name(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Team", field.Name)
 		},
@@ -4215,53 +4215,6 @@ func (ec *executionContext) fieldContext_Team_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Team_limits(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Team_limits(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Limits, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.AccountLimits)
-	fc.Result = res
-	return ec.marshalOAccountLimits2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Team_limits(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Team",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "dropletLimit":
-				return ec.fieldContext_AccountLimits_dropletLimit(ctx, field)
-			case "volumeLimit":
-				return ec.fieldContext_AccountLimits_volumeLimit(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type AccountLimits", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Team_uuid(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Team_uuid(ctx, field)
 	if err != nil {
@@ -4301,6 +4254,50 @@ func (ec *executionContext) fieldContext_Team_uuid(ctx context.Context, field gr
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Team_name(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Team_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Team_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Team",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6219,6 +6216,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case model.Dbaas:
+		return ec._Dbaas(ctx, sel, &obj)
+	case *model.Dbaas:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Dbaas(ctx, sel, obj)
 	case model.Droplet:
 		return ec._Droplet(ctx, sel, &obj)
 	case *model.Droplet:
@@ -6247,13 +6251,6 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._App(ctx, sel, obj)
-	case model.Dbaas:
-		return ec._Dbaas(ctx, sel, &obj)
-	case *model.Dbaas:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Dbaas(ctx, sel, obj)
 	case model.KubernetesCluster:
 		return ec._KubernetesCluster(ctx, sel, &obj)
 	case *model.KubernetesCluster:
@@ -6268,11 +6265,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Space(ctx, sel, obj)
-	case model.Resource:
+	case model.LoadBalancer:
+		return ec._LoadBalancer(ctx, sel, &obj)
+	case *model.LoadBalancer:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._Resource(ctx, sel, obj)
+		return ec._LoadBalancer(ctx, sel, obj)
 	case model.Team:
 		return ec._Team(ctx, sel, &obj)
 	case *model.Team:
@@ -6301,6 +6300,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Region(ctx, sel, obj)
+	case model.Resource:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Resource(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -6359,6 +6363,13 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			return graphql.Null
 		}
 		return ec._Space(ctx, sel, obj)
+	case model.LoadBalancer:
+		return ec._LoadBalancer(ctx, sel, &obj)
+	case *model.LoadBalancer:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LoadBalancer(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -6406,50 +6417,6 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "team":
 			out.Values[i] = ec._Account_team(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var accountLimitsImplementors = []string{"AccountLimits"}
-
-func (ec *executionContext) _AccountLimits(ctx context.Context, sel ast.SelectionSet, obj *model.AccountLimits) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, accountLimitsImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("AccountLimits")
-		case "dropletLimit":
-			out.Values[i] = ec._AccountLimits_dropletLimit(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "volumeLimit":
-			out.Values[i] = ec._AccountLimits_volumeLimit(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6708,6 +6675,50 @@ func (ec *executionContext) _KubernetesCluster(ctx context.Context, sel ast.Sele
 			}
 		case "name":
 			out.Values[i] = ec._KubernetesCluster_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var loadBalancerImplementors = []string{"LoadBalancer", "Node", "Resource"}
+
+func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.SelectionSet, obj *model.LoadBalancer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loadBalancerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoadBalancer")
+		case "id":
+			out.Values[i] = ec._LoadBalancer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._LoadBalancer_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7381,10 +7392,13 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "limits":
-			out.Values[i] = ec._Team_limits(ctx, field, obj)
 		case "uuid":
 			out.Values[i] = ec._Team_uuid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Team_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8375,13 +8389,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalOAccountLimits2ᚖgithubᚗcomᚋhalkeyeᚋdigitaloceanᚑgraphqlᚑapiᚋgraphᚋmodelᚐAccountLimits(ctx context.Context, sel ast.SelectionSet, v *model.AccountLimits) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._AccountLimits(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
