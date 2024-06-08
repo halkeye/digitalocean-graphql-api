@@ -3,15 +3,15 @@ module github.com/halkeye/digitalocean-graphql-api
 go 1.22.2
 
 require (
-	github.com/99designs/gqlgen v0.17.47
-	github.com/cosmtrek/air v1.52.1
-	github.com/digitalocean/godo v1.116.0
+	github.com/99designs/gqlgen v0.17.48
+	github.com/cosmtrek/air v1.52.2
+	github.com/digitalocean/godo v1.117.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/requestid v1.0.2
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/websocket v1.5.1
+	github.com/gorilla/websocket v1.5.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/toorop/gin-logrus v0.0.0-20210225092905-2c785434f26f
 	github.com/vektah/gqlparser/v2 v2.5.12
