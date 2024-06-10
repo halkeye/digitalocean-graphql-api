@@ -1,0 +1,22 @@
+name: Go
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'go.mod'
+
+      - name: Display Go version
+        run: go version
+
+      - name: Display Go version
+        run: go test -race -json ./... | go run github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter -output ctrf-report.json
+
+      - name: Run CTRF annotations
+        run: npx github-actions-ctrf ctrf-report.json
+        if: always()
