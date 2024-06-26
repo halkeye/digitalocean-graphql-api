@@ -4,9 +4,9 @@ go 1.22.2
 
 require (
 	github.com/99designs/gqlgen v0.17.49
-	github.com/air-verse/air v1.52.2
+	github.com/air-verse/air v1.52.3
 	github.com/ctrf-io/go-ctrf-json-reporter v0.0.6
-	github.com/digitalocean/godo v1.117.0
+	github.com/digitalocean/godo v1.118.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/requestid v1.0.2
 	github.com/gin-contrib/static v1.1.2
